@@ -1,0 +1,330 @@
+(function () {
+    $.fn.serializeObject = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [ o[this.name] ];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+
+    $.ajaxPost = function(url, data, successFun){
+
+        var errorFun = function(XMLHttpRequest, textStatus, errorThrown){
+             var result = eval("(" + XMLHttpRequest.responseText + ")");
+            showAlert(result.errorObject.errorText,"error");
+        };
+
+        var afterSuccess = function(result) {
+            if(successFun) {
+                successFun(result);
+            }
+        };
+        if(data){
+            jQuery.ajax( {
+                type : 'POST',
+                contentType : 'application/json',
+                url : url,
+                data: data,
+                dataType : 'json',
+                timeout:3600000,
+                success : afterSuccess,
+                error : errorFun
+            });
+        }else{
+            jQuery.ajax( {
+                type : 'POST',
+                contentType : 'application/json',
+                url : url,
+                dataType : 'json',
+                timeout:3600000,
+                success : afterSuccess,
+                error : errorFun
+            });
+        }
+    };
+})(jQuery);
+
+function handleResult(result) {
+    {
+        if(result.success) {
+            return true;
+        } else{
+            msgShow("操作提示:不成功");
+        }
+        return false;
+    }
+}
+
+/* 弹出框 2015-05-18 c j m*/
+function showWindow(dome,width,height,title){
+
+    var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥]");
+    dome = dome.replace(pattern, '');
+    art.dialog({
+        content: document.getElementById(dome),
+        id: 'EF893L',
+        title:title,
+        lock: true
+    });
+
+//    width = width == null? 'auto':width;
+//    height = height == null? 'auto':height;
+//    title = title == null? '':title;
+//    $(dome).dialog(
+//        {
+//            title:title,
+//            height:height,
+//            width:width,
+//            bgiframe :true,
+//            modal: false ,    //是否遮挡后面的元素
+//            resizable:true,   //是否可以改变大小
+//            draggable:false,  //是否可以拖拽
+//            stack :true,
+//            zIndex:10007,
+//            position:'center',
+//            beforeClose:function(event,ui){
+//            },
+//            close:function(event, ui){
+//                console.log(event.altKey);
+//                hideOverlay();
+//                if(event.altKey==false){
+//                    window.location.reload();
+//                }
+//            },
+//            open:function(){
+//                showOverlay();
+//            }
+//        }
+//    );
+
+}
+
+
+/* 关闭弹出框 2015-05-18 c j m*/
+function closeWindow(dome) {
+//    hideOverlay();
+//    $(dome).dialog('close');
+    art.dialog.get('EF893L').close();
+
+}
+
+/* 显示遮罩层 2015-05-18 c j m*/
+function showOverlay() {
+    var body = $("body");
+    var overlay = body.find("div.layer_overlay");
+    if(overlay.length == 0){
+        body.append("<div id='overlay' class='layer_overlay'></div>");
+    }
+    $("#overlay").height(pageHeight());
+    $("#overlay").width(pageWidth());
+    // fadeTo第一个参数为速度，第二个为透明度
+    // 多重方式控制透明度，保证兼容性，但也带来修改麻烦的问题
+    $("#overlay").fadeTo(200, 0.5);
+}
+
+/* 隐藏覆盖层 2015-05-18 c j m*/
+function hideOverlay() {
+    $("#overlay").fadeOut(200);
+    var body = $("body");
+    body.find("div.layer_overlay").remove();
+}
+
+/* 当前页面高度 2015-05-18 c j m*/
+function pageHeight() {
+    return document.body.scrollHeight;
+}
+
+/* 当前页面宽度 2015-05-18 c j m*/
+function pageWidth() {
+    return document.body.scrollWidth;
+}
+
+
+/* 显示遮罩层 2015-05-18 c j m*/
+function showOverlayAlert() {
+    var body = $("body");
+    var overlay = body.find("div.layer_overlay_alert");
+    if(overlay.length == 0){
+        body.append("<div id='overlay-alert' class='layer_overlay_alert'></div>");
+    }
+    $("#overlay-alert").height(pageHeight());
+    $("#overlay-alert").width(pageWidth());
+    $("#overlay-alert").fadeTo(200, 0.5);
+    // fadeTo第一个参数为速度，第二个为透明度
+    // 多重方式控制透明度，保证兼容性，但也带来修改麻烦的问题
+}
+
+/* 隐藏覆盖层 2015-05-18 c j m*/
+function hideOverlayAlert() {
+    $("#overlay-alert").fadeOut(200);
+    var body = $("body");
+    body.find("div.layer_overlay_alert").remove();
+}
+
+function showAlert(msg,type,okFun){
+    if(type=="success"){
+        alertSuccess(msg,okFun);
+    }
+    if(type=="error"){
+        alertError(msg,okFun);
+    }
+    if(type=="warning"){
+        alertWarning(msg,okFun);
+    }
+    if(type=="reminder"){
+        alertReminder(msg,okFun);
+    }
+    return true;
+}
+function alertSuccess(msg,okFun){
+    showOverlayAlert();
+    window.wxc.xcConfirm(msg, window.wxc.xcConfirm.typeEnum.success,  {
+        onOk:function(v){
+            hideOverlayAlert();
+            if(okFun)
+            okFun();
+        }
+    });
+}
+
+function alertError(msg,okFun){
+    showOverlayAlert();
+    window.wxc.xcConfirm(msg, window.wxc.xcConfirm.typeEnum.error,
+        {
+            onOk:function(v){
+                hideOverlayAlert();
+                if(okFun)
+                    okFun();
+            }
+        });
+
+}
+
+function alertReminder(msg,okFun){
+    showOverlayAlert();
+    window.wxc.xcConfirm(msg, window.wxc.xcConfirm.typeEnum.reminder,
+        {
+            onOk:function(v){
+                hideOverlayAlert();
+                if(okFun)
+                    okFun();
+            }
+        });
+
+}
+
+function alertWarning(msg,okFun){
+    showOverlayAlert();
+    window.wxc.xcConfirm(msg, window.wxc.xcConfirm.typeEnum.warning,
+        {
+            onOk:function(v){
+                hideOverlayAlert();
+                if(okFun)
+                    okFun();
+            },
+            onCancel:function(v){
+                hideOverlayAlert();
+            }
+        });
+
+}
+
+function alertConfirm(msg,successFun){
+    showOverlayAlert();
+    window.wxc.xcConfirm(msg, window.wxc.xcConfirm.typeEnum.confirm,
+        {
+            onOk:function(v){
+                hideOverlayAlert();
+                successFun();
+            },
+            onCancel:function(v){
+                hideOverlayAlert();
+            }
+
+        });
+}
+
+function showConfirm(message1,okFun){
+    $("#confirmMessage").html(message1);
+    $("#confirmId").show();
+    $("#confirmBt").unbind('click').removeAttr('onclick').click(function(){
+        closeConfirm();
+        if(okFun!=null){
+            okFun();
+        }
+    });
+}
+
+function closeConfirm(){
+    $("#confirmId").hide();
+}
+
+function hideLoading(){
+    $(".modal-load").hide();
+    $(".loading-load").hide();
+}
+function showLoading(){
+    $(".modal-load").show();
+    $(".loading-load").show();
+}
+/*遮罩*/
+function showMask(){
+    var body = $("body");
+    var mask = body.find("div.zdc-mask");
+    if(mask.length == 0){
+        body.append('<div class="zdc-mask" style="width: 100%;height: 100%;position: fixed;top: 0;left: 0;z-index: 2018;"><div class="modal-load" ><div class="load-zz"></div><div class="loading-load"><img  src="/template/tongan/statics/images/loadinfo.gif"/></div></div></div>');
+    }
+    showLoading();
+    $('.zdc-mask').show();
+}
+
+function hideMask(){
+    hideLoading();
+    $(".zdc-mask").hide();
+}
+
+
+//刷新首页购物车图标显示数量
+function refurbishCartCountIcon(object){
+
+    var size = 0;
+    for (var i=0;i<object.length;i++){
+        if (object[i].promotionType != 5 && object[i].itemSelected){
+            size ++;
+        }
+    }
+
+    if (size>0){
+        document.getElementById('cart_count').style.display = 'inline-block';
+    }else {
+        document.getElementById('cart_count').style.display = 'none';
+    }
+
+    if (parseInt(size) > 99){
+        $("#cart_count").text('99+');
+    }else {
+        $("#cart_count").text(size);
+    }
+}
+
+//刷新首页购物车图标显示数量
+function refurbishCartCount(cart_count){
+    if (cart_count != undefined && cart_count != null && cart_count != "" && cart_count>0){
+        if (parseInt(cart_count) > 99){
+            $("#cart_count").text('99+');
+        }else {
+            $("#cart_count").text(cart_count);
+        }
+        document.getElementById('cart_count').style.display = 'inline-block';
+    }else {
+        document.getElementById('cart_count').style.display = 'none';
+    }
+}

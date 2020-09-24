@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>润药商城注册页面-购您所要</title>
+		<link rel="stylesheet" href="./css/reset.css">
+		<link rel="stylesheet" href="./css/integrate.css">
+		<script type="text/javascript">
+			function buyers(){
+				var uado=ado.value;
+				var usite=site.value;
+				var uavatar=avatar.value;
+				var vuser=user.value;
+				var uphone=phone.value;
+				var uimage=image.value;
+				if(!usite){
+					alert('请输入单位名称!');
+					return;
+				}if(!vuser){
+					alert('请输入联系人姓名!');
+					return;
+				}if(!uphone){
+					alert('请输入联系人电话!');
+					return;
+				}if(!uimage){
+					alert('请输入验证码!');
+					return;
+				}else if(uimage!='2hb8'){
+					alert('验证码错误!');
+					return;
+				}
+				var xhr=new XMLHttpRequest();
+				xhr.open('post','/ajax/buyers',true);
+				var formdata=`ado=${uado}&site=${usite}&avatar=${uavatar}&user_name=${vuser}&phone=${uphone}`;
+				xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+				xhr.send(formdata);
+				xhr.onreadystatechange=function(){
+					if(xhr.readyState==4 && xhr.status==200){
+						var r=xhr.responseText;
+						if(r==1){
+							alert('注册成功');
+							location.href='index.html';
+						}else{
+							alert('注册失败');
+						}
+					}
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<iframe src="share/share_head.html" scrolling="no" height="193px"></iframe>
+		<div class="main-h">
+			<div class="cont-h">
+				<h1>申请成为<span>湖南双舟</span>采购商</h1>
+			</div>
+			<div class="cont-x">
+				<ul class="clearfix">
+					<li>
+						<div>
+							<span>申请对象</span>
+							<h5>*</h5>
+						</div>
+						<input type="text" value="湖南双舟" id="ado">
+						<h6></h6>
+					</li>
+					<li>
+						<div>
+							<span>单位名称</span>
+							<h5>*</h5>
+						</div>
+						<input type="text" id="site">
+					</li>
+					<li><h6>请完整填写营业执照单位名称</h6></li>
+					<li>
+						<div>
+							<span>单位详细地址</span>
+						</div>
+						<input type="text" id="avatar">
+					</li>
+					<li><h6>请填写营业执照单位详细所在地址</h6></li>
+					<li>
+						<div>
+							<span>联系人姓名</span>
+							<h5>*</h5>
+						</div>
+						<input type="text" id="user">
+					</li>
+					<li><h6>请填写联系人姓名</h6></li>
+					<li>
+						<div>
+							<span>联系人电话</span>
+							<h5>*</h5>
+						</div>
+						<input type="text" id="phone">
+					</li>
+					<li><h6>请输入真实的手机号码,确保申请期间的有效沟通</h6></li>
+					<li id="yz">
+						<div>
+							<span>验证码</span>
+							<h5>*</h5>
+						</div>
+						<input type="text" id="image">
+						<img src="img/y.jpg">
+					</li>
+					<li><h6>请输入验证码</h6></li>
+					<li><a onclick="buyers()">提交申请信息</a></li>
+				</ul>
+			</div>
+		</div>
+		<iframe src="share/share_tail.html" scrolling="no" height="750px"></iframe>
+		<iframe src="share/share_note.html" scrolling="no"></iframe>
+	</body>
+</html>

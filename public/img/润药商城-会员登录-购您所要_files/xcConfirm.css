@@ -1,0 +1,52 @@
+/*垂直居中*/
+.verticalAlign{vertical-align:middle;display:inline-block;height:100%;margin-left:-1px;}
+
+.xcConfirm .popBox{position:fixed;left:50%;top:50%;background-color:#ffffff;z-index:2147000001;width:500px;height:initial;margin-left:-285px;margin-top:-150px;border-radius:5px;font-weight:bold;font-size: 16px;color:#535e66;}
+.xcConfirm .popBox .ttBox{height:35px;line-height:35px;padding:0 15px;/*! border-bottom:solid 1px #eef0f1; */  background: #f3f3f3;}
+.xcConfirm .popBox .ttBox .tt{font-size:14px;display:block; font-weight:400; float:left;height:inherit;position:relative;}
+.xcConfirm .popBox .ttBox .clsBtn{display:block;cursor:pointer;width:14px;height:14px;position:absolute;top:11px;right:12px; /*! background:url(../img/icons.png) -48px -96px no-repeat; */transform: rotate(-45deg);}
+.xcConfirm .popBox .ttBox .clsBtn:before{content: ''; width: 14px; height: 2px; background-color: #999999; position: absolute; left: 0; top:6px;}
+.xcConfirm .popBox .ttBox .clsBtn:after{content: ''; width: 2px; height: 14px; background-color: #999999; position: absolute; left: 6px; top:0;}
+.xcConfirm .popBox .ttBox .clsBtn:hover:before{background-color: #666;}
+.xcConfirm .popBox .ttBox .clsBtn:hover:after{background-color: #666;}
+.xcConfirm .popBox .txtBox{margin:52px 100px;height:100px;overflow:hidden;}
+.xcConfirm .popBox .txtBox .bigIcon{float:left;margin-right:20px;width:48px;height:48px;background-image:url(../img/icons.png);background-repeat:no-repeat;background-position:48px 0;}
+.xcConfirm .popBox .txtBox p{height:84px;margin-top:16px;line-height:26px;overflow-x:hidden;overflow-y:auto;}
+.xcConfirm .popBox .txtBox p input{width:364px;height:30px;border:solid 1px #eef0f1;font-size:18px;margin-top:6px;}
+.xcConfirm .popBox .btnArea{border-top:solid 1px #eef0f1;}
+.xcConfirm .popBox .btnGroup{/*! float:right; */padding-top: 15px;text-align: center;padding-bottom: 15px;background: #f3f3f3;}
+.xcConfirm .popBox .btnGroup .sgBtn{/*! margin-top:14px; *//*! margin-right:10px; */font-size: 14px;}
+.xcConfirm .popBox .sgBtn{margin: 0 30px;display:inline-block;cursor:pointer;/*! float:left; */width:80px;height:30px;line-height:30px;text-align:center;color:#FFFFFF;border-radius:3px;}
+.xcConfirm .popBox .sgBtn.ok{background-color:#FFB33C;color:#FFFFFF;}
+.xcConfirm .popBox .sgBtn.ok:hover{background-color:#f2a936;}
+.xcConfirm .popBox .sgBtn.cancel{background-color:#FFB33C;color:#FFFFFF;}
+.xcConfirm .popBox .sgBtn.cancel:hover{background-color:#f2a936;}
+
+
+#overlay {
+    background: #000;
+    filter: alpha(opacity=50); /* IE的透明度 */
+    opacity: 0.5;  /* 透明度 */
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 1000; /* 此处的图层要大于页面 */
+    display:none;
+}
+
+#overlay-alert {
+    background: #000;
+    filter: alpha(opacity=50); /* IE的透明度 */
+    opacity: 0.5;  /* 透明度 */
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 20007; /* 此处的图层要大于页面 */
+    display:none;
+}

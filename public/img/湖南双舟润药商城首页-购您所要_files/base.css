@@ -1,0 +1,96 @@
+/* CSS Document */
+html{ background:white; color:#333;}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,input,textarea,p,blockquote,th,td,hr,button,article,footer,header,menu,nav,section{margin:0; padding:0;}
+body,button,input,select,textarea {font-size:12px; font-family:arial,tahoma,"微软雅黑", "宋体", sans-serif;}
+h1,h2,h3,h4,h5,h6,textarea{font-weight:normal; font-size:12px;}
+b,textarea{font-style:normal; font-weight:400;}
+table{ border-collapse:collapse; border-spacing:0;}/* 去掉 table cell 的边距并让其边重合 */
+pre{white-space: pre-wrap;word-wrap: break-word;}/* pre 可以换行*/
+img{border:none; vertical-align:middle;}
+input,select,textarea {font-size:100%;}
+del{text-decoration:line-through;}/* 一致的 del 样式 */
+a{color:#666;text-decoration:none; transition: color 200ms ,background-color 200ms;}
+button{cursor: pointer; border: none;}
+button:active,button:focus, a:active,a:focus,*:focus {-moz-outline:none;outline:none;}/* 去除 ie6 & ie7 焦点点状线 */
+ul,li,ol{ list-style:none;}
+input{font-family:inherit; margin: 0; padding: 0;}
+th {text-align:inherit;}/* ie bug：th 不继承 text-align */
+iframe{display:block;}/* ie6 7 8(q) bug 显示为行内表现 */
+em,i{font-style: normal;}
+
+.elli{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}/* 单行多出省略号.... */
+.clear{display:block;overflow:hidden;clear:both;height:0;line-height:0;font-size:0;zoom:1; }/* 清除浮动 zoom:1 for ie6 & ie7 */
+.clear:after{content:".";display:block;height:0;clear:both;visibility:hidden}
+/*此处如果影响其他页面的样式就把margin-top: -17px删除*/
+.clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden;margin-top: -12px;}
+.clearfix{zoom:1; /* for ie6 & ie7 */}
+
+.hide{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}/* 多出隐藏变... */
+.fl{float:left;display:inline;}/* 设置浮动，减少浮动带来的 bug */
+.fr{float:right;display:inline;}
+.ctrl-prev a,.ctrl-next a{transition: all 0.15s ease-in 0s;}
+
+
+
+
+/*radio图标*/
+.radio-label{cursor: pointer; float: left; display: inline-block; text-align: left; margin-right: 2em;}
+.icon-radio{display: inline-block; width: 16px; height: 16px; background: url("../images/baze-icon.png") no-repeat;margin-right: 10px; margin-top: -2px;  vertical-align: middle;}
+.selected .icon-radio{background: url("../images/baze-icon.png") no-repeat; background-position: 0 -26px;}
+/*checkbox图标*/
+.checkbox-label{cursor: pointer; float: left; display: inline-block; text-align: left; margin-right: 2em;}
+.icon-checkbox{display: inline-block; width: 16px; height: 16px; margin-right: 10px; margin-top: -2px;  vertical-align: middle; background: url("../images/baze-icon.png") no-repeat;background-position: 0 -78px;}
+.selected .icon-checkbox{background: url("../images/baze-icon.png") no-repeat; background-position: 0 -104px;}
+/*上传图标*/
+.uploading{display:inline-block; width:84px; height: 25px; font-size: 14px; text-align: center; border-radius: 2px; line-height: 25px; border: 1px solid #c3c3c3; background: url("../images/uploading-icon.png") repeat-x; }
+a:hover.uploading{background: url("../images/uploading-icon.png") repeat-x; background-position: 0 -26px;}
+
+#overlay {
+    background: #000;
+    filter: alpha(opacity=50); /* IE的透明度 */
+    opacity: 0.5;  /* 透明度 */
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 1000; /* 此处的图层要大于页面 */
+    display:none;
+}
+
+#overlay-alert {
+    background: #000;
+    filter: alpha(opacity=50); /* IE的透明度 */
+    opacity: 0.5;  /* 透明度 */
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 20007; /* 此处的图层要大于页面 */
+    display:none;
+}
+
+div.common_maskLayer{
+    display:none;width: 100%; height: 100%; position: fixed; ;
+}
+
+.binding-layer{position: fixed; left: 0;top:0; right: 0;bottom: 0; z-index: 100; background-color: rgba(0,0,0,0.4);filter: progid:DXImageTransform.Microsoft.Gradient(startColorStr=#66000000,endColorStr=#66000000);}
+.binding-layer .binding-box{width: 410px; background-color: #f6f7f9; box-shadow: 0 0 13px rgba(0,0,0,0.3); position: absolute; left: 50%; top:50%; margin-left: -205px; margin-top: -200px;}
+.binding-layer .binding-box .mt{height: 45px; line-height: 45px; background-color: #f5aa33; position: relative;}
+.binding-layer .binding-box .mt span{float: left; padding-left: 26px; color: #ffffff; font-size: 16px; font-weight: bold;}
+.binding-layer .binding-box .close-btn{display: block; width: 45px; height: 45px; background: #f28b15 url("../images/close21x21.png") no-repeat center; position: absolute; right: 0; top:0;}
+.binding-layer .binding-box .mc{padding: 30px 0 42px 50px;}
+.binding-layer .binding-box .mc h5{color: #333333; font-size: 16px;font-weight: bold; margin-bottom: 25px; line-height: 27px;}
+.binding-layer .binding-box .sub-btn{display: block; width: 308px; height: 45px; margin-top:30px; line-height: 45px; font-size: 16px; color: #fff; background-color: #ffb33c; text-align: center;}
+.binding-layer .binding-box .item{width: 308px; padding-bottom: 25px;}
+.binding-layer .binding-box .item input{display: block; width: 290px; height: 40px; color: #333; font-size: 16px; border: 1px solid #e6e6e6; background-color: #fff; padding-left: 16px;}
+.binding-layer .binding-box .item p{clear: both; font-size: 14px; color: #e15f63; padding-top: 4px;}
+.binding-layer .binding-box .yzm-btn{float: left; width: 110px; height: 42px; line-height: 42px; background-color: #ffb33c; text-align: center; color: #ffffff; font-size: 14px;}
+.binding-layer .binding-box .yzm-btn.disabled{background-color: #ededed; color: #999; cursor: default;}
+.binding-layer .binding-box .item .width-198{float: left; width: 180px; border-right: none;}
+.binding-layer .binding-box .sub-btn:hover{background-color: #f2a936;}
+
+.binding-layer .binding-box .mt .close-btn1{display: block; width: 45px; height: 45px; background: #f28b15 url("../images/close21x21.png") no-repeat center; position: absolute; right: 0; top:0;}

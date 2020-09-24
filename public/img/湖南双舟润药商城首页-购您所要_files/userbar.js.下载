@@ -1,0 +1,68 @@
+(function($){
+
+    $(document).ready(function(){
+        $("#myAccount").hover(function(){
+            $(this).addClass("cur");
+            $(this).find(".dt").children("a").addClass("cur");
+            $(this).find(".fore-box").show();
+
+        },function(){
+            $(this).removeClass("cur");
+            $(this).find(".dt").children("a").removeClass("cur");
+            $(this).find(".fore-box").hide();
+        });
+        $("#buyerDistrict").hover(function(){
+            $(this).addClass("cur");
+            $(this).find(".dt").children("a").addClass("cur");
+            $(this).find(".fore-box").show();
+
+        },function(){
+            $(this).removeClass("cur");
+            $(this).find(".dt").children("a").removeClass("cur");
+            $(this).find(".fore-box").hide();
+        });
+        $("#salesmanDistrict").hover(function(){
+            $(this).addClass("cur");
+            $(this).find(".dt").children("a").addClass("cur");
+            $(this).find(".fore-box").show();
+        },function(){
+            $(this).removeClass("cur");
+            $(this).find(".dt").children("a").removeClass("cur");
+            $(this).find(".fore-box").hide();
+        });
+        $("#supplierDistrict").hover(function(){
+            $(this).addClass("cur");
+            $(this).find(".dt").children("a").addClass("cur");
+            $(this).find(".fore-box").show();
+        },function(){
+            $(this).removeClass("cur");
+            $(this).find(".dt").children("a").removeClass("cur");
+            $(this).find(".fore-box").hide();
+        });
+        $("#websiteNav").hover(function(){
+            $(this).addClass("cur");
+            $(this).find(".dt").children("a").addClass("cur");
+            $(this).find(".nav-box").show();
+        },function(){
+            $(this).removeClass("cur");
+            $(this).find(".dt").children("a").removeClass("cur");
+            $(this).find(".nav-box").hide();
+        });
+        $("#appDistrict").hover(function(){
+            $(this).addClass("cur");
+            $(".app_box").css("zIndex", 999).show();
+        },function(){
+            $(this).removeClass("cur");
+            $(".app_box").css("zIndex", -1).hide();
+        });
+
+    });
+})(jQuery);
+
+function  selectClient(){
+    function _show(){
+        $("#maskLayer").show();
+        $("#popupView").show();
+    }
+    $("#popupView").load(webPath.webRoot+"/module/common/include/switchBuyers.ac?switchType=1",_show);
+}

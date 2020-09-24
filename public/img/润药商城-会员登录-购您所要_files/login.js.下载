@@ -1,0 +1,15 @@
+$(function () {
+    $("#loginBtn").click(function () {
+        showMask();
+        var loginId = $("#loginId").val();
+        $("#loginId").val(loginId.trim());
+        $('#loginForm').submit();
+    })
+});
+
+/*改变验证码*/
+function changValidateCode () {
+    $("#validateCodeImg").attr("src", webPath.webRoot+"/ValidateCode?" + Math.random());
+}
+
+

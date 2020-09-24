@@ -1,0 +1,46 @@
+/**
+ * Created by lzx on 2016/5/19.
+ */
+$(document).ready(function(){
+    //抢购专区界面，轮播图区域
+    var bannerIsShow = webPath.bannerIsShow;
+    if("Y"==bannerIsShow){
+        $(".banner").show();
+    }else{
+        $(".banner").hide();
+    }
+
+    $("img").lazyload({
+        effect: "fadeIn",
+        threshold: 300
+    });
+    <!--焦点图旁边广告切换-->
+    TabLT(1,"z",$("#focus-cont"),$("#focus-cont li"),2,$("#focus-prev"),$("#focus-next"),1,$("#focus-slider"),"a",0,"","",1,"",300,1,2500);
+
+    //促销倒计时
+    $(".end-time .time").each(function() {
+        var activeTime = $(this).attr("time");
+        if (activeTime != null && $.trim(activeTime) != '') {
+            $(this).imallCountdown(activeTime, "default", webPath.systemTime);
+        }
+    });
+
+    //直降倒计时
+    $(".panicBuyTime").each(function() {
+        var panicBuyTime = $(this).attr("time");
+        if (panicBuyTime != null && $.trim(panicBuyTime) != '') {
+            $(this).imallCountdown(panicBuyTime, "panicBuy", webPath.systemTime);
+        }
+    });
+});
+
+//tab点击事件
+function tabClick(item){
+    $(".mc2 .data").removeClass("dataBgc");
+    $(".mc2 .tab-text").removeClass("dataColor");
+    $(".mc2 .data"+item).addClass("dataBgc");
+    $(".mc2 .tab-text"+item).addClass("dataColor");
+    $(this).addClass("dataBgc");
+    $(".mc2 .val").hide();
+    $(".mc2 .tab-val"+item).show();
+};

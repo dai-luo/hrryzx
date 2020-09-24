@@ -1,0 +1,483 @@
+var productSubcodes=[];
+var pageSize=10;
+var pageNum=1;
+$(function () {
+    getProductCodes();
+    var scrollTimer;
+    $(".renav").hover(function () {
+        clearInterval(scrollTimer);
+    }, function () {
+        scrollTimer = setInterval(function () {
+            scrollNews($(".renav"));
+        }, 2000);
+    }).trigger("mouseout");
+
+    if ($("#roteAdv li").size() < 2) {
+        $("#turnL").hide();
+        $("#turnR").hide();
+    }
+    //主轮换广告
+    var count=0;
+    $('#roteAdv').after("<div class='slide-controls-title' id='index_roteAdv_nav' style='z-index: 30;'>").cycle({
+        prev: '#turnL',
+        next: '#turnR',
+        fx: 'scrollLeft',
+        speed: 'fast',
+        timeout: 5000,// 幻灯片过渡间隔，单位是毫秒 (若值为0则不自动切换)
+        pager: '#index_roteAdv_nav',
+        pagerEvent: 'mouseover', // 按钮驱动页面导航的事件
+        before: function () {
+        },
+        pagerAnchorBuilder: function (index, slide) {
+            var title = slide.attributes.title.value;//标题
+            var isEnableTitle = slide.attributes.isEnableTitle.value;//是否展示标题
+
+            if(isEnableTitle=="Y"){
+                count++;
+            }
+            if (count > 5 || isEnableTitle == "N") {//设置不展示，或者超过五条，就设为kong
+               return;
+            }else{
+                if (index == 0) {
+                    return '<li id="c' + index + '"  class="cur" href="javascript:;" >' + title+'</li>'
+                } else {
+                    return '<li id="c' + index + '" href="javascript:;">' + title+'</li>'
+                }
+            }
+        },
+        after: function (currSlideElement, nextSlideElement, options, forwardFlag) {
+            var a = $("#index_roteAdv_nav").find("li").attr("class", "");
+            $("#c" + nextSlideElement.id).attr("class", "cur");
+        }
+    });
+
+    $(".hover_t").hover(function () {
+        $(this).addClass("cur");
+        $(this).find(".b_pri").show();
+    }, function () {
+        $(this).find(".b_pri").hide();
+        $(this).removeClass("cur");
+    });
+
+    //tab切换
+    $(".tabChance").click(function () {
+        var rel = $(this).attr("rel");
+        $(".tabChance").removeClass("cur");
+        $(this).addClass("cur");
+        $(".b_infos").hide();
+        $(".tabBox" + rel).show();
+    });
+
+    //tabBox切换
+    $(".tabLine").click(function () {
+        var scount = $(this).attr("scount");
+        $(this).parent().find("a").removeClass("cur");
+        $(this).find("a").addClass("cur");
+        $(this).parent().parent().find(".floor_box").hide();
+        $(this).parent().parent().find(".floor_box" + scount).show();
+    });
+
+    $(".tabLine").hover(function () {
+        var scount = $(this).attr("scount");
+        $(this).parent().find("a").removeClass("cur");
+        $(this).find("a").addClass("cur");
+        $(this).parent().parent().find(".floor_box").hide();
+        $(this).parent().parent().find(".floor_box" + scount).show();
+    });
+
+    $(".y_icon").click(function () {
+        var rel = $(this).attr("rel");
+        if ("Y" == rel) {
+            $(this).parent().parent().css("height", "68px");
+            $(this).parent().parent().find(".y_right").css("height", "58px");
+            $(this).parent().removeClass("cur");
+            $(this).attr("rel", "N");
+        } else {
+            $(this).parent().parent().css("height", "auto");
+            $(this).parent().parent().find(".y_right").css("height", "auto");
+            $(this).parent().addClass("cur");
+            $(this).attr("rel", "Y");
+        }
+    });
+
+    $(".treeEffect").click(function () {
+        $(".treeEffect").each(function () {
+            var rel = $(this).attr("rel");
+            var tager = $(this);
+            if ("Y" == rel) {
+                $(this).parent().find(".r_list_list").slideUp(200, function () {
+                    $(this).parent().removeClass("cur");
+                    tager.attr("rel", "N");
+                });
+            }
+        });
+        var rel2 = $(this).attr("rel");
+        if ("N" == rel2) {
+            $(this).attr("rel", "Y");
+            $(this).parent().addClass("cur");
+            $(this).parent().find(".r_list_list").slideDown(200);
+        }
+    });
+
+    $(".row-effect li").hover(function () {
+        $(".row-effect li").removeClass("cur");
+        $(this).addClass("cur");
+    }, function () {
+        $(this).removeClass("cur");
+    });
+    $(".floorCon-slide .floorConSlideImgNav li span").css({opacity: 0.85});
+    $(".floorCon-slide .floorConSlideImgNav li.hover").find("span").css({left: 0})//初始
+    $(".floorCon1-slide .floorConSlideImgNav1 li span").css({opacity: 0.85});
+    $(".floorCon1-slide .floorConSlideImgNav1 li.hover").find("span").css({left: 0})//初始
+    $(".floorCon li").mouseover(function () {
+        if ($(this).hasClass("hover")) {
+            return
+        }//不处理满足状态的
+        var imgleft = $(this).index() * 230 * (-1) + "px";
+
+        if ($(this).attr("name") == "f2") {
+            imgleft = $(this).index() * 210 * (-1) + "px";
+        }
+        $(this).addClass("hover").find("span").stop().animate({left: 0}, 400);
+        $(this).siblings().removeClass("hover").find("span").stop().animate({left: "-10px"}, 500);
+        //图片显示
+        $(this).parent().prev(".floorConSlideImg").stop().animate({left: imgleft}, 300);
+    });
+
+    $(".hover_t_b").hide();
+    $(".hover_t").hover(function () {
+        $(".hover_t_b").hide();
+        $(this).find(".hover_t_b").show();
+    }, function () {
+        $(this).find(".hover_t_b").hide();
+    });
+    $(".hover_t_b").hover(function () {
+        $(this).show();
+    }, function () {
+        if (this.parents(".hover_t").contains(window.event.srcElement)) {
+            $(this).hide();
+        }
+    })
+});
+;;;;
+function scrollNews(obj) {
+    var $self = obj.find("ul:first");
+    var lineHeight = $self.find("li:first").height();
+    $self.animate({"margin-top": -lineHeight + "px"}, 600, function () {
+        $self.css({"margin-top": "0px"}).find("li:first").appendTo($self);
+    })
+}
+
+/*减产品*/
+function prdSubNum(obj) {
+    var prdNum = $(obj).parent().find('input');
+    //中包装件数
+    var midPackTotal = prdNum.attr("midPackTotal");
+    var value = prdNum.val();
+    var num = parseInt(value) - parseInt(midPackTotal);
+    if (num <= 0) {
+        num = midPackTotal;
+    }
+    prdNum.val(num);
+    prdNum.attr('value', num);
+}
+/*加产品*/
+function prdAddNum(obj) {
+    var prdNum = $(obj).parent().find('input');
+    var midPackTotal = prdNum.attr("midPackTotal");
+    var value = prdNum.val();
+    var num = parseInt(value) + parseInt(midPackTotal);
+    prdNum.val(num);
+    prdNum.attr('value', num);
+}
+/*验证采购数量*/
+function checkNum(obj) {
+    var num = $(obj).val();
+    var mid = parseInt($(obj).attr('midPackTotal'));
+
+    if (!/^[1-9]\d*$/.test(num) || num % mid != 0) {
+        $(obj).val(mid);
+        return false;
+    }
+    return true;
+}
+
+/*添加到购物车*/
+function addToCart(obj, type) {
+
+    //业务员选择客户弹出层
+    if (paramData.currUserType == 1 && paramData.sysUserId == "") {
+        $('#maskLayer').fadeIn();
+        $("#popupView").load(webPath.webRoot + "/fastOrder/include/switchBuyers.ac", $("#popupView").show());
+        thisPage = true;
+        //window.location.href=webPath2.webRoot+"/module/member/index.ac"
+        return;
+    }
+
+    var addcart = $(obj);
+    var ico = addcart.attr("ico");
+    var tr = addcart.parent().parent().parent();
+    var skuId = addcart.attr("skuid");
+    var num;
+    if (type == 1) {
+        num = tr.find(".td_num .sprd_num").val();
+    } else {
+        num = tr.find(".td_num .dprd_num").val();
+    }
+
+    if (!/^[1-9]\d*$/.test(num)) {
+        showAlert("请输入正确的采购数量", "error");
+        return;
+    }
+
+    var carttype = addcart.attr("carttype");
+    var handler = addcart.attr("handler");
+
+    if (skuId == "") {
+//        alert("请选择产品规格")
+        showAlert("请选择产品规格", "error");
+        return;
+    }
+
+    $.ajax({
+        url: webPath.webRoot + "/cart/add.json",
+        data: {type: carttype, objectId: skuId, quantity: num, handler: handler},
+        dataType: "json",
+        success: function (data) {
+            moveBoxToCart(addcart, ico);
+            //alert("成功加入购物车");
+
+        },
+        error: function (XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+                if (result.errorObject.errorText == "请您先登录后再购买!") {
+                    var b = window.confirm("请您先登录后再购买!");
+                    if (b)
+                        window.location.href = webPath.webRoot + "/login.ac";
+                } else {
+//                    alert(result.errorObject.errorText);
+                    showAlert(result.errorObject.errorText, "error");
+                }
+            }
+        }
+    });
+}
+function hideSwitchBuyers() {
+    hidePopup();
+
+    /*    if(paramData.userTypeCode==1&&paramData.sysUserId==""){
+     //        alert("您必须先代理客户!");
+     showAlert("您必须先代理客户!", "error");
+     }else{
+     hidePopup();
+     }*/
+}
+
+//隐藏弹出窗口
+function hidePopup() {
+    $("#maskLayer").hide();
+    $("#popupView").hide();
+    $("#popupView").html("");
+}
+
+//登录切换
+function loginType(type) {
+    if (type == 0) {
+        $("#typeGys").removeClass("cur");
+        $("#typeCgs").addClass("cur");
+    } else {
+        $("#typeCgs").removeClass("cur");
+        $("#typeGys").addClass("cur");
+    }
+}
+
+function hideLg() {
+    $(".log-btn-show").show();
+    $(".log-btn-hide").hide();
+    $('.login-id').attr('disabled', false);
+    $('.login-password').attr('disabled', false);
+}
+function showLg() {
+    $('.login-id').attr('disabled', true);
+    $('.login-password').attr('disabled', true);
+    $(".log-btn-show").hide();
+    $(".log-btn-hide").show();
+}
+
+function loginFormSubmit() {
+    showLg();
+    $('#loginForm').submit();
+    /*if (!$("#loginId").val() == "" && !$("#userPsw").val() == "") {
+        showLg();
+        $('#loginForm').submit();
+    }*/
+}
+
+//资讯文章切换
+function ckInformation(type) {
+    $(".rt-bd-nav ul li a").each(function () {
+        $(".rt-bd-nav ul li a").removeClass("cur");
+    });
+    $(".rt-bd-cont div[class='cont-box']").each(function () {
+        $(".rt-bd-cont div[class='cont-box']").attr("style", "display: none;");
+    });
+
+    $("#information" + type).addClass("cur"); //给刚点击的添加上样式 cur
+    $("#informationDiv" + type).attr("style", ""); //对应数据显示
+}
+//神策埋点（运营位点击（上方滚动轮换广告））
+function mktClickTopBanner(index,obj) {
+    var hrefUrl=$(obj).attr("href");
+    var title =$(obj).children("img").attr("title");
+    var location_sc="";
+    $(".mc-dt").each(function(index){
+        if(index==0){
+            location_sc=$(this).text();
+        }
+    });
+    var sub_company=paramData.sub_company;
+    var clientRole=paramData.currUserType=="2" ? "采购商" : (paramData.currUserType=="1" ? "业务员":"");
+    var unitNm="无";
+    if(paramData.currUserType=="2"){
+        unitNm=paramData.companyName;
+    }
+    sa.track("MktClick", {
+        location:paramData.sub_station,	//站点	字符串
+        sub_company:sub_company,//子公司	字符串
+        institution_name:sub_company,//	机构名称	字符串
+        rel_Org_name: paramData.relOrgName,//客户名称（结算户名称）
+        //client_name: paramData.clientName,//客户单位名称
+        orgCode:paramData.orgCode ,//站点编码
+        rel_Org_Code:paramData.relOrgCode ,//客户编码（结算户编码）
+        BUYERS_NO: paramData.buyersNo,//客户单位编码(客户主码)
+        mkt_type: "滚动Banner", //运营位类型	字符串	运营位描述；示例请参考Sheet -“运营位整理”
+        mkt_location: "润药商城首页", //运营位所在页面	字符串	运营位所在网页位置描述；示例请参考Sheet -“运营位整理”
+        mkt_index: index, //运营位所在位置	数值	运营位实际所在的排序，如滚动Banner共有1，2，3三个位置；示例请参考Sheet -“运营位整理”
+        mkt_content: title, //运营位内容	字符串	运营位的内容，传入此运营位当前展示内容标题：示例请参考Sheet -“运营位整理”
+        is_campaign: true, //是否是活动	BOOL	是否跳转到活动页面
+        page_url:hrefUrl,//	所在页面地址	字符串	跳转到的页面
+        client_role:clientRole,//会员类型
+        registration_channel: "PC",//渠道类型
+        client_name:unitNm //客户名称
+    });
+    CampaignDetail(hrefUrl,title,location_sc,sub_company,clientRole);
+
+}
+
+//神策埋点（运营位点击（下方滚动轮换广告））
+function mktClickBottomBanner(index,obj) {
+    var hrefUrl=$(obj).attr("href");
+    var title =$(obj).children("img").attr("title");
+    var location_sc="";
+    $(".mc-dt").each(function(index){
+        if(index==0){
+            location_sc=$(this).text();
+        }
+    });
+    var sub_company=paramData.sub_company;
+    var clientRole=paramData.currUserType=="2" ? "采购商" : (paramData.currUserType=="1" ? "业务员":"");
+    var unitNm="无";
+    if(paramData.currUserType=="2"){
+        unitNm=paramData.companyName;
+    }
+    sa.track("MktClick", {
+        location:paramData.sub_station,	//站点	字符串
+        sub_company:sub_company,//子公司	字符串
+        institution_name:sub_company,//	机构名称	字符串
+        rel_Org_name: paramData.relOrgName,//客户名称（结算户名称）
+        //client_name: paramData.clientName,//客户单位名称
+        orgCode:paramData.orgCode ,//站点编码
+        rel_Org_Code:paramData.relOrgCode ,//客户编码（结算户编码）
+        BUYERS_NO: paramData.buyersNo,//客户单位编码(客户主码)
+        mkt_type: "下方Banner", //运营位类型	字符串	运营位描述；示例请参考Sheet -“运营位整理”
+        mkt_location: "润药商城首页", //运营位所在页面	字符串	运营位所在网页位置描述；示例请参考Sheet -“运营位整理”
+        mkt_index: index, //运营位所在位置	数值	运营位实际所在的排序，如滚动Banner共有1，2，3三个位置；示例请参考Sheet -“运营位整理”
+        mkt_content: title, //运营位内容	字符串	运营位的内容，传入此运营位当前展示内容标题：示例请参考Sheet -“运营位整理”
+        is_campaign: true, //是否是活动	BOOL	是否跳转到活动页面
+        page_url:hrefUrl,//	所在页面地址	字符串	跳转到的页面
+        client_role:clientRole,//会员类型
+        registration_channel: "PC",//渠道类型
+        client_name:unitNm //客户名称
+    });
+    CampaignDetail(hrefUrl,title,location_sc,sub_company,clientRole);
+
+}
+
+//神策埋点（浏览活动详情页）
+function CampaignDetail(hrefUrl,title,location_sc,sub_company,clientRole){
+    if(title=="" || title==null){
+       title="非促销";
+    }
+    var page_title=paramData.sub_station+"润药商城首页-购您所要";
+    var unitNm="无";
+    if(paramData.currUserType=="2"){
+        unitNm=paramData.companyName;
+    }
+    sa.track("CampaignDetail",{
+        location:location_sc,	//站点	字符串
+        sub_company:sub_company,//子公司	字符串
+        institution_name:sub_company,//	机构名称	字符串
+        rel_Org_name: paramData.relOrgName,//客户名称（结算户名称）
+        //client_name: paramData.clientName,//客户单位名称
+        orgCode:paramData.orgCode ,//站点编码
+        rel_Org_Code:paramData.relOrgCode ,//客户编码（结算户编码）
+        BUYERS_NO: paramData.buyersNo,//客户单位编码(客户主码)
+        campaign_name:title,	//活动名称	字符串
+        page_title:page_title,	//所在页面标题	字符串
+        page_url:hrefUrl,//所在页面地址	字符串
+        client_role:clientRole,//会员类型
+        registration_channel: "PC",//渠道类型
+        client_name:unitNm //客户名称
+    });
+
+}
+
+
+function changeProductPage(){
+    var totalCount=productSubcodes.length;//总条数
+    var totalPage=totalCount/pageSize;//总页数
+    if(totalPage>pageNum+1){
+      pageNum++;
+    }else{
+        pageNum=1;
+    }
+    switchProduct(pageSize,pageNum);
+}
+
+//获取首页商品推荐，每次获取10个
+function switchProduct(pageSize,pageNum){
+    $.ajax({
+        url:webPath.webRoot+"/productRecommend/getProductSubCodeToPage.json",
+        type:"POST",
+        dataType:"json",
+        data:_ObjectToJSON('post',{productIds:productSubcodes,pageSize:pageSize,pageNum:pageNum}),
+        contentType:"application/json; charset=UTF-8",
+        success:function(data){
+          loadPage(data.result);
+        }
+    })
+
+}
+
+
+function getProductCodes(){
+    $.ajax({
+        url:webPath.webRoot+"/productRecommend/findIndexRecommendProducut.json",
+        type:"POST",
+        dataType:"json",
+        success:function(data){
+            if(data.result.length>0){
+                productSubcodes=data.result;
+                switchProduct(pageSize,pageNum);
+            }
+        }
+    });
+}
+
+function loadPage(codes){
+    //商品主推模块
+   var moduleName=$("#loadIndexRecommendProduct").attr("moduleName");
+    $("#loadIndexRecommendProduct").load("/loadIndexRecommendProduct.ac?codes="+codes+"&moduleName="+moduleName);
+}
+

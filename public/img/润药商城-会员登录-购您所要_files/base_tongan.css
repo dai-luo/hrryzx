@@ -1,0 +1,115 @@
+/* CSS Document */
+/*html{ background:white; color:#333;}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,input,textarea,p,blockquote,th,td,hr,button,article,footer,header,menu,nav,section{margin:0; padding:0;}
+body,button,input,select,textarea {font-size:12px; font-family:tahoma,arial,"Hiragino Sans GB","微软雅黑", "宋体", sans-serif;}
+h1,h2,h3,h4,h5,h6,textarea{font-weight:normal; font-size:12px;}
+b,textarea{font-style:normal; font-weight:400;}
+table{ border-collapse:collapse; border-spacing:0;}!* 去掉 table cell 的边距并让其边重合 *!
+pre{white-space: pre-wrap;word-wrap: break-word;}!* pre 可以换行*!
+img{border:none; vertical-align:middle; padding-left:19%;}
+input,select,textarea {font-size:100%;}
+del{text-decoration:line-through;}!* 一致的 del 样式 *!
+a{color:#666;text-decoration:none;}
+a:focus,*:focus {outline:none;}!* 去除 ie6 & ie7 焦点点状线 *!
+a:hover,a:link, a:visited, a:active,input:focus{text-decoration: none; transition: text-shadow 250ms ease-in 0ms, color 120ms ease-in 0ms;}
+ul,li,ol{ list-style:none;}
+input{font-family:inherit; margin: 0; padding: 0;}
+th {text-align:inherit;}!* ie bug：th 不继承 text-align *!
+iframe{display:block;}!* ie6 7 8(q) bug 显示为行内表现 *!*/
+
+.elli{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}/* 单行多出省略号.... */
+.clear{display:block;overflow:hidden;clear:both;height:0;line-height:0;font-size:0;}/* 清除浮动 */
+.clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden}
+.clearfix{zoom:1; /* for ie6 & ie7 */}
+.hide{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}/* 多出隐藏变... */
+.fl{float:left;display:inline;}/* 设置浮动，减少浮动带来的 bug */
+.fr{float:right;display:inline;}
+.w{width:1190px; margin:0 auto; position: relative;}
+.ctrl-prev a,.ctrl-next a{transition: all 0.15s ease-in 0s;}
+
+
+/*radio图标*/
+.radio-label{cursor: pointer; float: left; display: inline-block; text-align: left; margin-right: 2em;}
+.icon-radio{display: inline-block; width: 16px; height: 16px; background: url("../images/baze-icon.png") no-repeat;margin-right: 10px;   vertical-align: middle;}
+.selected .icon-radio{background: url("../images/baze-icon.png") no-repeat; background-position: 0 -26px;}
+/*checkbox图标*/
+.checkbox-label{cursor: pointer; float: left; display: inline-block; text-align: left; margin-right: 2em;}
+.icon-checkbox{display: inline-block; width: 16px; height: 16px; background: url("../images/baze-icon.png") no-repeat;background-position: 0 -78px; margin-right: 10px;  vertical-align: middle;}
+.selected .icon-checkbox{background: url("../images/baze-icon.png") no-repeat; background-position: 0 -104px;}
+/*上传图标*/
+.uploading{display:inline-block; width:84px; height: 25px; font-size: 14px; text-align: center; border-radius: 2px; line-height: 25px; border: 1px solid #c3c3c3; background: url("../images/uploading-icon.png") repeat-x; }
+a:hover.uploading{background: url("../images/uploading-icon.png") repeat-x; background-position: 0 -26px;}
+/*更多图标*/
+.more-label{cursor: pointer; display: inline-block; text-align: left;  margin-right: 2em;}
+.icon-more{display: inline-block; width: 16px; height: 16px; background: url("../images/baze-icon.png") no-repeat;background-position: 0 -401px; margin-right: 10px;  vertical-align: middle;}
+.selected .icon-more{background: url("../images/baze-icon.png") no-repeat; background-position: 0 -427px;}
+
+
+#overlay {
+    background: #000;
+    filter: alpha(opacity=50); /* IE的透明度 */
+    opacity: 0.5;  /* 透明度 */
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 1000; /* 此处的图层要大于页面 */
+    display:none;
+}
+
+#overlay-alert {
+    background: #000;
+    filter: alpha(opacity=50); /* IE的透明度 */
+    opacity: 0.5;  /* 透明度 */
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 20007; /* 此处的图层要大于页面 */
+    display:none;
+}
+
+
+/**************************************************首页搬过来放下面*******************************************/
+/* CSS Document */
+html{ background:white; color:#333;}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,input,textarea,p,blockquote,th,td,hr,button,article,footer,header,menu,nav,section{margin:0; padding:0;}
+body,button,input,select,textarea {font-size:12px; font-family:arial,tahoma,"微软雅黑", "宋体", sans-serif;}
+h1,h2,h3,h4,h5,h6,textarea{font-weight:normal; font-size:12px;}
+b,textarea{font-style:normal; font-weight:400;}
+table{ border-collapse:collapse; border-spacing:0;}/* 去掉 table cell 的边距并让其边重合 */
+pre{white-space: pre-wrap;word-wrap: break-word;}/* pre 可以换行*/
+img{border:none; vertical-align:middle;}
+input,select,textarea {font-size:100%;}
+del{text-decoration:line-through;}/* 一致的 del 样式 */
+a{color:#666;text-decoration:none; transition: color 200ms ,background-color 200ms;}
+button{cursor: pointer; border: none;}
+button:active,button:focus, a:active,a:focus,*:focus {-moz-outline:none;outline:none;}/* 去除 ie6 & ie7 焦点点状线 */
+ul,li,ol{ list-style:none;}
+input{font-family:inherit; margin: 0; padding: 0;}
+th {text-align:inherit;}/* ie bug：th 不继承 text-align */
+iframe{display:block;}/* ie6 7 8(q) bug 显示为行内表现 */
+em,i{font-style: normal;}
+
+.elli{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}/* 单行多出省略号.... */
+.clear{display:block;overflow:hidden;clear:both;height:0;line-height:0;font-size:0;zoom:1; }/* 清除浮动 zoom:1 for ie6 & ie7 */
+.clear:after{content:".";display:block;height:0;clear:both;visibility:hidden}
+.clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden;}
+.clearfix{zoom:1; /* for ie6 & ie7 */}
+
+.hide{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}/* 多出隐藏变... */
+.fl{float:left;display:inline;}/* 设置浮动，减少浮动带来的 bug */
+.fr{float:right;display:inline;}
+.ctrl-prev a,.ctrl-next a{transition: all 0.15s ease-in 0s;}
+
+
+
+
+
+
+
+

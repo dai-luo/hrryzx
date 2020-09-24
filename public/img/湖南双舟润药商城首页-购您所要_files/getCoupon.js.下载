@@ -1,0 +1,50 @@
+/**
+ * Created by yys on 2016/5/5.
+ */
+
+
+$(document).ready(function() {
+
+    var isGetBtn = true;
+    $('body').delegate('.getCoupon', 'click', function() {
+        if(isGetBtn){
+            isGetBtn = false; //防止多次点击早造成多次请求
+
+            var $mythis = $(this);
+            var batchId = $mythis.attr('data-batchId');
+            var sign = $mythis.attr('data-sign');
+
+            $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8";
+            $.ajax({
+                type:"POST",
+                url: webParam.webRoot+"/member/getCoupon.json",
+                data:{
+                    batchId: batchId,
+                    sign: sign
+                },
+                dataType: "json",
+                success: function(data) {
+                    if (data.success == true) {
+
+                        $("[data-batchId="+batchId+"]").attr('class', 'get-btn getCoupon').html('<span>已领取</span>');
+                        $($mythis.attr('data-target-bindAmount')).each(function() {
+                            var amount = parseInt($(this).text());
+                            $(this).text(amount+1);
+                        });
+
+                        showAlert("领取成功!","success");
+                        isGetBtn = true;
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus) {
+                    if (XMLHttpRequest.status == 500) {
+                        var result = eval("(" + XMLHttpRequest.responseText + ")");
+                        showAlert(result.errorObject.errorText,"error");
+                        isGetBtn = true;
+                    }
+                }
+            });
+        }
+    });
+
+});

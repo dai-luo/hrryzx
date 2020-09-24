@@ -1,0 +1,358 @@
+/**
+ * Created by IntelliJ IDEA.
+ * User: lzp
+ * Date: 11-7-12
+ * Time: 下午7:05
+ * 登录验证插件
+ */
+var loginIdStr="";
+(function ($) {
+    $.fn.login = function (settings) {
+        var defaultSettings = {
+            loginId: {
+                id: "loginId",
+                alert: {
+                    emptyAlert: "请输入用户名！"
+                }
+
+            },
+            userPsw: {
+                id: "userPsw",
+                alert: {
+                    emptyAlert: "请输入密码！"
+                }
+
+            },
+            validateCode: {
+                id: "validateCode",
+                alert: {
+                    emptyAlert: "请输入验证码！"
+                }
+
+            },
+            memberUsInf: {
+                id: "memberUsInf"
+            },
+
+            contextPath: "",
+            url: "/member/loginValidateCode.json"
+
+        };
+        settings = $.extend(true, defaultSettings, settings);
+        return this.each(function () {
+            $(this).bind("submit", function () {
+                return checkLoginForm(settings)
+            })
+
+        });
+        function checkLoginForm(settings) {
+            isHidAlert();
+            var loginId = $("#" + settings.loginId.id);
+            var userPsw = $("#" + settings.userPsw.id);
+            var validateCode = webPath.tencentCaptchaOpen == 'Y' ? null : $("#" + settings.validateCode.id);
+            var memberUsInf = $("#" + settings.memberUsInf.id);
+            if (loginId.val() == "") {
+                hideMask();
+                $("#alert").show();
+                $("#alerttext").html(settings.loginId.alert.emptyAlert);
+                return false;
+            }
+            if (userPsw.val() == "") {
+                hideMask();
+                $("#alert2").show();
+                $("#alerttext1").html(settings.userPsw.alert.emptyAlert);
+                return false;
+            }
+
+            if (webPath.tencentCaptchaOpen == 'N' && validateCode.val() == "") {
+                hideMask();
+                $("#alert3").show();
+                $("#alerttext2").html(settings.validateCode.alert.emptyAlert)
+                return false;
+            }
+            confirmLogin(loginId, userPsw, validateCode, memberUsInf);
+            return false;
+        }
+
+        function confirmLogin(loginId, userPsw, validateCode, memberUsInf) {
+            loginIdStr=loginId.val();
+            var pswVal = checkCookieVal(loginId.val(), userPsw.val());
+            $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8";
+            $.ajax({
+                type: "POST",
+                url: settings.contextPath + settings.url,
+                data: {
+                    loginId: loginId.val(),
+                    userPsw: pswVal,
+                    validateCode: validateCode == null ? "" : validateCode.val(),
+                    memberUsInf: memberUsInf.is(':checked')
+                },
+                dataType: "json",
+                success: function (data) {
+                    if (data.success == false) {
+                        checkLoginResult(data);
+                    } else {
+                        sensorsLoginEvent(data);
+                        $("#discuzLogin").html(data.loginScript);
+                        if (data.redirectUrl == "redirect:/") {
+                            location.href = settings.contextPath + "/";
+                        }
+                        else if (data.redirectUrl == null) {
+                            location.href = settings.contextPath + "/index.ac";
+                        } else {
+                            setTimeout(function () {
+                                location.href = data.redirectUrl
+                            }, 3);
+                        }
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus) {
+                    if (XMLHttpRequest.status == 500) {
+                        var result = eval("(" + XMLHttpRequest.responseText + ")");
+                        checkLoginResult(result.errorObject);
+                        buryingPointLoginFail(result.errorObject);
+                        changValidateCode();
+                    }
+                }
+            });
+            //}else{
+            //    $("#isFirstEnter").val("0");
+            //}
+
+        }
+
+        function buryingPointLoginSuccess(data) {
+            //神策埋点（登录成功）
+            var client_role = "采购商";
+            switch (data.userType) {
+                case "1":
+                client_role = "业务员";
+                break;
+                case "2":
+                    client_role = "采购商";
+                    break;
+                case "3":
+                    client_role = "供应商";
+                    break;
+            }
+            sa.login(data.loginId);
+            sa.track("Login", {
+                location:data.station,	//站点	字符串
+                sub_company:data.companyNm,//子公司	字符串
+                institution_name:data.companyNm,//	机构名字符串
+                $is_first_time: true,//写死为true，神策后台自动判断，详细请参考：https://www.sensorsdata.cn/manual/first_time.html
+                is_successful: true,//是否成功
+                failure_reason: "无",//失败原因
+                client_role: client_role,//会员类型
+                registration_channel: "PC",//渠道类型
+                client_name:data.unitNm, //客户名称
+                rel_Org_name:data.relOrgName, //客户名称（结算户名称）
+                orgCode:data.orgCode, //站点编码
+                rel_Org_Code:data.relOrgCode,//客户编码（结算户编码）
+                BUYERS_NO:data.buyersNo, //客户单位编码(客户主码)
+                representative:data.sasesManName//我的业务员
+            });
+            //loginToFront(data,true);
+        }
+
+
+        function buryingPointLoginFail(data) {
+            sa.login(loginIdStr);
+            sa.track("Login", {
+                location:"无",	//站点	字符串
+                sub_company:"无",//子公司	字符串
+                institution_name:"无",//	机构名称	字符串
+                $is_first_time: true,
+                is_successful: false,
+                failure_reason: setErrerStr(data),
+                client_role: "无",
+                registration_channel: "PC",//渠道类型
+                client_name:"无", //客户名称
+                rel_Org_name: "无",//客户名称（结算户名称）
+                orgCode:"无" ,//站点编码
+                rel_Org_Code:"无" ,//客户编码（结算户编码）
+                BUYERS_NO: "无", //客户单位编码(客户主码)
+                representative:"无"//我的业务员
+            });
+            //loginToFront(data,false);
+        }
+
+
+        ////将用户唯一标识传到后端（后端埋点需要）
+        //function loginToFront(data, isSucceed) {
+        //    var distinct_id;
+        //    if (data.sysUserId == null) {
+        //        //sa.quick('isReady',function () {
+        //        distinct_id = sa.store.getDistinctId();//登录失败时，需要将cookie中的distinct_id传到后端
+        //        //});
+        //    }
+        //    $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8";
+        //    $.ajax({
+        //        type: "POST",
+        //        url: webPath.webRoot + "/member/serviceLogin.json",
+        //        data: {sysUserId: data.sysUserId==null?distinct_id:data.sysUserId, isSucceed: isSucceed, errorStr: setErrerStr(data)},
+        //        dataType: "json",
+        //        success: function (data) {
+        //
+        //        }
+        //    });
+        //}
+
+        function setErrerStr(data) {
+            if (data.errorCode == "errors.login.userstat") {
+                return "用户已被冻结，请联系客服";
+            } else if (data.errorCode == "errors.login.noexist") {
+                return "账户名或密码错误";
+            } else if (data.errorCode == "errors.login.password") {
+                return "用户名与密码不匹配";
+            } else if (data.errorCode == "errors.login.no.remain.time") {
+                return "连续密码输错";
+            } else if (data.errorCode == "errors.remain.time.login.password") {
+                return "密码出错";
+            } else if (data.errorCode == "errors.login.validate") {
+                return "验证码错误";
+            } else if (data.errorCode == "errors.login.noAllow") {
+                return "您不是前台用户，登录失败";
+            } else if (data.errorCode == "errors.account.noConnected") {
+                return "请耐心等待公司审核资料！";
+            } else if (data.errorCode == "errors.account.noConnected") {
+                return "帐号未关联城市，登录失败";
+            } else if (data.errorCode == "errors.login.needValidate") {
+                return "用户名与密码不匹配";
+            }else if(data.errorCode=="errors.login.validate.timeout"){
+                    return "验证码已过期";
+            } else {
+                return "用户名与密码不匹配";
+            }
+
+        }
+
+
+        function checkLoginResult(data) {
+            hideMask();
+            if (data.errorCode == "errors.login.userstat") {
+                $("#alert").show();
+                $("#alerttext").html("<span style='color: red'>用户已被冻结，请联系客服！<span>");
+                $("#loginId").val("");
+                $("#loginId").focus();
+                $("#validateCode").val("");
+            }
+            else if (data.errorCode == "errors.login.noexist") {
+                $("#alert").show();
+                $("#alerttext").html("<span style='color: red'>账户名或密码错误<span>");
+                $("#loginId").focus();
+                $("#loginId").val("");
+                $("#validateCode").val("");
+            }
+            else if (data.errorCode == "message") {
+                $("#alert").show();
+                $("#alerttext").html("<span style='color: red'>" + data.errorText + "<span>");
+                $("#loginId").focus();
+                $("#loginId").val("");
+                $("#validateCode").val("");
+            }
+            else if (data.errorCode == "errors.login.password") {
+                $("#alert2").show();
+                $("#alerttext1").html("<span style='color: red'>用户名与密码不匹配<span>");
+                $("#userPsw").focus();
+                $("#userPsw").val("");
+                $("#validateCode").val("");
+            } else if (data.errorCode == "errors.login.no.remain.time") {
+                $("#alert2").show();
+                $("#alerttext1").html("<span style='color: red'>" + data.errorText + "<span>");
+                $("#validateCode").focus();
+                $("#validateCode").val("");
+            } else if (data.errorCode == "errors.remain.time.login.password") {
+                $("#alert2").show();
+                $("#alerttext1").html("<span style='color: red'>" + data.errorText + "<span>");
+                $("#userPsw").focus();
+                $("#userPsw").val("");
+                $("#validateCode").val("");
+
+            } else if (data.errorCode == "errors.login.validate") {
+                $("#alert3").show();
+                $("#alerttext2").html("<span style='color: red'>验证码错误<span>");
+                $("#validateCode").focus();
+                $("#validateCode").val("");
+            } else if(data.errorCode=="errors.login.validate.timeout"){
+                $("#alert3").show();
+                $("#alerttext2").html("<span style='color: red'>验证码已过期<span>");
+                $("#validateCode").focus();
+                $("#validateCode").val("");
+            } else if (data.errorCode == "errors.login.noAllow") {
+                $("#alert").show();
+                $("#alerttext").html("<span style='color: red'>您不是前台用户，登录失败<span>");
+                $("#loginId").val("");
+                $("#loginId").focus();
+            } else if (data.errorCode == "errors.account.noConnected") {
+                $("#alert").show();
+                $("#alerttext").html("<span style='color: red'>请耐心等待公司审核资料！<span>");
+                $("#loginId").val("");
+                $("#loginId").focus();
+            } else if (data.errorCode == "errors.account.noConnected") {
+                $("#alert").show();
+                $("#alerttext").html("<span style='color: red'>帐号未关联城市，登录失败<span>");
+                $("#loginId").val("");
+                $("#loginId").focus();
+            } else if (data.errorCode == "errors.login.needValidate") {
+                //显示验证码
+                $("#alert2").show();
+                $("#alerttext1").html("<span style='color: red'>用户名与密码不匹配<span>");
+                $("#userPsw").focus();
+                $("#userPsw").val("");
+                $("#validateCode").val("");
+            } else {
+                $("#alert").show();
+                $("#alerttext").html("<span style='color: red'>" + data.errorText + "<span>");
+                $("#loginId").val("");
+                $("#loginId").focus();
+            }
+            changValidateCode();
+        }
+
+        function isHidAlert(){
+            $("#alert").hide();
+            $("#alert2").hide();
+            $("#alert3").hide();
+        }
+
+        function showDialog(text, buttons) {
+            $("#tiptext").html(text);
+            $("#tip").dialog({
+                buttons: buttons
+            });
+
+        }
+
+        function sensorsLoginEvent(data){
+            $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8";
+            $.ajax({
+                type:'POST',
+                url:settings.contextPath+"/member/sensorsLoginEvent.json",
+                dataType:"json",
+                data:{sysUserId:data.sysUserId},
+                success:function(data){
+                    buryingPointLoginSuccess(data.result);//神策埋点(登录成功)
+                }
+            })
+        }
+    };
+
+    /*校验是否跟cookie上的信息一致,并给密码加密*/
+    function checkCookieVal(loginId, psw) {
+        var encrypt = new JSEncrypt();
+        encrypt.setPublicKey(rsa_public_key);
+        var cookieInf = getCookie("LOGININF");
+        if (cookieInf != null) {
+            var infArr = cookieInf.split("|");
+            if (loginId == infArr[0] && psw == infArr[1].substring(0, 6)) {
+                psw = encrypt.encrypt(infArr[1]);
+            } else {
+                psw = encrypt.encrypt($.md5(psw));
+            }
+        } else {
+            psw = encrypt.encrypt($.md5(psw));
+        }
+        return psw;
+    }
+})(jQuery);

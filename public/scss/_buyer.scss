@@ -1,0 +1,98 @@
+@import "share";
+.main-h{
+	width: 100%;
+	background: url(../img/tatl.jpg) no-repeat;
+	background-color: #F6F6F6;
+	padding-bottom: 30px;
+	margin-top: -4px;
+	.cont-h{
+		line-height: 100px;
+		text-align: center;
+		h1{
+			color: #F6F7F9;
+			font-size: 28px;
+			font-weight: normal;
+			span{
+				color: #F7A900;
+			}
+		}
+	}
+	.cont-x{
+		width: 1190px;
+		height: 728px;
+		background-color: #FFFFFF;
+		border-radius: 10px;
+		margin: 0 auto;
+		box-shadow: 0px 0px 10px 0px #333333;
+		ul{
+			width: 518px;
+			margin:0 auto;
+			padding-top: 60px;
+			li{
+				div{
+					float: left;
+					font-size: 14px;
+					width: 108px;
+					height: 42px;
+					line-height: 42px;
+					padding-right: 20px;
+					span{
+						float: right;
+					}
+					h5{
+					float: right;
+					color: #f7a900;
+					}
+				}
+				&:nth-child(1),&:nth-child(2),&:nth-child(4),&:nth-child(6),&:nth-child(8){
+					input{
+						float: left;
+						width: 373px;
+						height: 40px;
+						font-size: 14px;
+						padding-left: 15px;
+						border: 1px solid #E6E6E6;
+					}
+				}
+				&:nth-child(10){
+					input{
+						float: left;
+						width: 202px;
+						height: 40px;
+						font-size: 14px;
+						padding-left: 15px;
+						border: 1px solid #E6E6E6;
+					}
+				}
+				h6{
+					float: left;
+					color: #CCCCCC;
+					width: 400px;
+					height: 51px;
+					line-height: 56px;
+					padding-left: 128px;
+					font-size: 14px;
+				}
+				img{
+					width: 104px;
+					margin-left: 15px;
+				}
+				a{
+					float: left;
+					width: 390px;
+					height: 60px;
+					font-size: 18px;
+					text-align: center;
+					line-height: 60px;
+					margin-left: 128px;
+					border-radius: 2px;
+					color: #FFFFFF;
+					background-color: #F7A900;
+				}
+				a:hover{
+					cursor: pointer;
+				}
+			}
+		}
+	}
+}

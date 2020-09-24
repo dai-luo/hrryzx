@@ -1,0 +1,18 @@
+
+$(function(){
+    $('#main_menu .item').mouseenter(function(mevent){
+        var item = $(this) ;
+        $(this).addClass('cur');
+        var ev=mevent.currentTarget;
+        var oTop = parseInt($(ev).css('height'));
+        var index = parseInt($(ev).attr("memuIndex")) -1;
+        //item.find(".submenu").css("top",-(oTop * index)).show("normal");
+        item.find(".submenu").css("top",-(oTop * index)).show();
+        $(item).show();
+    })
+    $('#main_menu .item').mouseleave(function(mevent){
+        $(this).removeClass('cur');
+        $('.mc .submenu').hide();
+    })
+})
+

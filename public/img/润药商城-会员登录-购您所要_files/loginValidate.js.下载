@@ -1,0 +1,57 @@
+/**
+ * User: xiaochi
+ * Date: 12-1-4
+ * 登录的验证
+ */
+$(document).ready(function(){
+
+    /**
+     * 点击登录时调用验证控件*/
+    $("#loginForm").login({
+        contextPath:webPath.webRoot
+    });
+
+    $("#loginId").change(function(){
+        $("#userPsw").val("");
+    });
+    /**
+     * 监听回车键，回车时登录*/
+    $("body").bind('keyup',function(event) {
+        if(event.keyCode==13){
+            //if(isMobileLogin){//回车时判断是否是手机验证码登录
+            //    mobileLogin();
+            //}else{
+            //如果焦点是在登陆账号框并且密码没填则切换到密码输入框
+            if(!$("#loginId").val()||$("#loginId").val()=='登录账号/手机'){
+                $("#loginId").val("");
+                $("#loginId").focus();
+                return;
+            }
+            if(!$("#userPsw").val()){
+                $("#userPsw").focus();
+                return;
+            }
+            if(!$("#validateCode").val()){
+                $("#validateCode").focus();
+                return;
+            }
+            if($("#loginId").attr("loginPosition") == "loginPage"){
+                showMask();
+            }else {
+                showLg();
+            }
+            $('#loginForm').submit();
+        }
+        //}
+    });
+    /**
+     * 输入框重新输入时错误消息隐藏*/
+    $("input").keypress(function(){
+        $("#alert").hide();
+        $("#alert2").hide();
+        $("#alert3").hide();
+        //$("#mobilealert").hide();
+        //$("#mobilealert4").hide();
+        $(".forget").css("margin","10px 0 10px");
+    })
+});

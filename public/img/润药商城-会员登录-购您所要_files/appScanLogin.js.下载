@@ -1,0 +1,131 @@
+var text = "";
+var type = "";
+var isContinue = true;
+
+//切换成账号密码登录
+function acc_login(){
+    //$("#loginDiv").css("height","300px");
+    $(".acc_login").show();
+    $(".qrcode_login").hide();
+    isContinue = false;
+    type = "";
+
+}
+
+//切换成二维码登录
+function qrcode_login(){
+    //$("#loginDiv").css("height","300px");
+    $(".msg-err").hide();
+    $(".qrcode-msg").hide();
+    $(".qrcode-mod").show();
+    $(".acc_login").hide();
+    $(".qrcode_login").show();
+    $("#qr_code").html("");
+    //$(".validatecode_login").hide();
+    $.ajax({
+        type: 'POST',
+        url: webPath.webRoot+ '/scan/getQrCodeContent.json',
+        dataType: "json",
+        success:function(data){
+            text = data.result;
+            console.log("二维码内容："+text);
+            $("#qr_code").qrcode({
+                width:140, //宽度
+                height:140, //高度
+                typeNumber:-1,//计算模式
+                correctLevel:2,//二维码纠错级别
+                text: text
+            });
+            //不断向后台发起请求检测当前二维码的状态
+            isContinue = true;
+            type = "";
+            longPolling(text,type);
+        }
+    });
+
+}
+
+//重新获取登录二维码
+function refresh_qrcode_login(){
+    isContinue = true;
+    type = "";
+    qrcode_login();
+}
+
+//长连接检测当前二维码的状态
+function longPolling(context,type) {
+    if(isContinue === false ){
+        return;
+    }
+    var params= {context:context,type:type};
+    $.ajax({
+        type: 'POST',
+        url: webPath.webRoot+ '/scan/qrCodeCheckLogin.json',
+        dataType: "json",
+        data:params,
+        timeout: 10000,
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+            longPolling(text,type);
+        },
+        success: function (data) {
+            var status = data.status;
+            if(status === "timeout" || status === "cancel"){
+                //如果是当前请求的二维码内容失效时提在页面提示
+                if(context === text){
+                    //二维码已失效，添加遮罩
+                    $(".qrcode-mod").show();
+                    $(".msg-err").show();
+                    $(".qrcode-msg").hide();
+                }
+            }
+
+            if (status ==="scan"){
+                type = "scan";
+                longPolling(text,type);
+                $(".qrcode-msg").show();
+                $(".qrcode-mod").hide();
+            }
+
+            if (status === "login"){
+                buryingPointLoginSuccess(data);
+                window.location.href=  "index.html";
+            }
+
+        }
+    });
+}
+
+function buryingPointLoginSuccess(data) {
+    console.log(data.userType+"|"+data.loginId+"|"+data.station+"|"+data.companyNm);
+    //神策埋点（登录成功）
+    var client_role = "采购商";
+    switch (data.userType) {
+        case "1":
+            client_role = "业务员";
+            break;
+        case "2":
+            client_role = "采购商";
+            break;
+        case "3":
+            client_role = "供应商";
+            break;
+    }
+    sa.login(data.loginId);
+    sa.track("Login", {
+        location:data.station,	//站点	字符串
+        sub_company:data.companyNm,//子公司	字符串
+        institution_name:data.companyNm,//	机构名字符串
+        $is_first_time: true,//写死为true，神策后台自动判断，详细请参考：https://www.sensorsdata.cn/manual/first_time.html
+        is_successful: true,//是否成功
+        failure_reason: "无",//失败原因
+        client_role: client_role,//会员类型
+        registration_channel: "WAP",//渠道类型
+        client_name:data.unitNm, //客户名称
+        rel_Org_name:data.relOrgName, //客户名称（结算户名称）
+        orgCode:data.orgCode, //站点编码
+        rel_Org_Code:data.relOrgCode,//客户编码（结算户编码）
+        BUYERS_NO:data.buyersNo, //客户单位编码(客户主码)
+        representative:data.sasesManName//我的业务员
+    });
+}

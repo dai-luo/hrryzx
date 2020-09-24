@@ -1,0 +1,1076 @@
+var strP = /^1[0123456789]{10}$/;
+var getFocus=true;
+var productSearchKeywords;
+var currentLine=0;
+var count=0;
+(function($){
+    $(document).ready(function(){
+/*        //用户登录后发现手机未激活  弹窗绑定激活
+        var isClosePhone = getCookie("isClosePhone");
+        var userIds = getCookie("USID");
+        if(isClosePhone == undefined || isClosePhone!='Y' || userIds.indexOf(userProxyData.userId)==-1){
+            showVerify();
+        }*/
+        //子公司
+        $(".station").hover(
+            function (e) {
+                $(this).parent().addClass("hover");
+            },
+            function (e) {
+                $(this).parent().removeClass("hover");
+            }
+        );
+
+
+        $("#searchFields").click(function(){
+            $(this).css("color","#37474F");
+            var searchFields = $("#searchFields").val();
+            if((productSearch.keyword==null|| productSearch.keyword=="")&& checkValue(productSearchKeywords,searchFields)){
+                $(this).attr("value","");
+            }
+        });
+
+        timingSwitch(true);
+
+        //获取焦点关键词不滚动
+        $("#searchFields").focus(function(){
+            getFocus=false;
+            //获取焦点将url设置为空，此时点击搜索按钮，会执行正常的搜索
+            $("#searchFields").attr("url", "");
+        });
+
+        //失去焦点关键词滚动
+        $("#searchFields").blur(function(){
+           getFocus=true;
+        });
+
+
+        $("#searchFields").keydown(function (event) {
+            if (event.keyCode == 13) {//搜索框回车键
+                var searchFields = $("#searchFields").val().trim();
+                if(searchFields==null || searchFields==""){
+                    showAlert("请输入搜索关键字","error");
+                    return false;
+                }
+                searchProduct(searchFields);
+            }
+            if (event.keyCode == 38) {//搜索框方向（上）键
+                currentLine--;
+                count++;
+                changeItem();
+                return;
+            }
+            if (event.keyCode == 40) {//搜索框方向（下）键
+                currentLine++;
+                count++;
+                changeItem();
+
+            }
+        });
+
+
+
+
+
+        /*头部搜索*/
+        /*$("#searchFields").blur(function(){
+            if($(this).val()==""){
+                $(this).attr("value","请输入通用名|准字号|拼音码|厂家");
+            }
+        });
+        $("#searchFields").mouseup(function(){
+            if($(this).val()=="请输入通用名|准字号|拼音码|厂家"){
+                $(this).attr("value","");
+            }
+        });*/
+
+        $(".search-button").click(function(){
+            //var searchFields=$(this).parent().siblings("input").get(1);
+            var searchFields = $("#searchFields").val();
+            if(searchFields==null|| searchFields==""||searchFields=="请输入通用名|准字号|拼音码|厂家"){
+               //alert("请输入搜索关键字");
+                showAlert("请输入搜索关键字","error");
+                return false;
+            }
+/*            $b=$(this).parent().parent("form");
+            setTimeout(function() {
+                $b.submit();
+                $("#searchFields").css("color","#37474F");
+            },1);*/
+            var url = $("#searchFields").attr("url").trim();
+            if (url != null && url != "" && url != "#") {//如果装修时有设置url并且url不等于“#”，则跳转到指定的活动页
+                window.location.href = webPath.webRoot + url + "?keyword=" + encodeURI(searchFields) + "&url=" + url;
+            } else {//没有设置或者设置“#”号，按照原有的逻辑跳转
+                window.location.href = webPath.webRoot + "/productlist.ac?keyword=" + encodeURI(searchFields);
+            }
+        });
+
+        $("#closeBtn1").click(function(){
+            $("#showMobileValidate").css("display","none");
+            setCookie("isClosePhone","Y",1);
+            var userIds = ((getCookie("USID")==undefined?"":getCookie("USID"))==""?"":getCookie("USID")+"_") + userProxyData.userId;
+            setCookie("USID",userIds,1);
+        });
+
+        /**
+         * 监听回车键，回车时登录*/
+        $("body").bind('keyup',function(event) {
+            if(event.keyCode==13){
+                //如果焦点是在登陆账号框并且密码没填则切换到密码输入框,其他input的同上
+                if(!$("#mobileValidateCode").val()||$("#mobileValidateCode").val()=='登录账号/手机'){
+                    $("#mobileValidateCode").val("");
+                    $("#mobileValidateCode").focus();
+                    return;
+                }
+                if(!$("#verificationCode").val()){
+                    $("#verificationCode").focus();
+                    return;
+                }
+                if(!$("#validateCode").val()){
+                    $("#validateCode").focus();
+
+                }
+            }
+        });
+
+        $(".categorys").hover(function(){
+            $("#main_menu").show();
+            loadCateHover(); //需要重新加载js，不然在除了首页都会无效
+        },function(){
+            if(Top_Path.topParam!="index"){
+                $("#main_menu").hide();
+            }
+        });
+    });
+
+
+})(jQuery);
+
+function loadCateHover(){
+    $('#main_menu .item').mouseenter(function(mevent){
+        var item = $(this) ;
+        $(this).addClass('cur');
+        var ev=mevent.currentTarget;
+        var oTop = parseInt($(ev).css('height'));
+        var index = parseInt($(ev).attr("memuIndex")) -1;
+        //item.find(".submenu").css("top",-(oTop * index)).show("normal");
+        item.find(".submenu").css("top",-(oTop * index)).show();
+        $(item).show();
+    });
+    $('#main_menu .item').mouseleave(function(mevent){
+        $(this).removeClass('cur');
+        $('.mc .submenu').hide();
+    })
+}
+function setCookie(key,val,time){//设置cookie方法
+    var date=new Date(); //获取当前时间
+    var expiresDays=time;  //将date设置为n天以后的时间
+    date.setTime(date.getTime()+expiresDays*24*3600*1000); //格式化为cookie识别的时间
+    document.cookie=key + "=" + val +";expires="+date.toGMTString();  //设置cookie
+}
+function getCookie(key) {//获取cookie方法
+    /*获取cookie参数*/
+    var getCookie = document.cookie.replace(/[ ]/g, "");  //获取cookie，并且将获得的cookie格式化，去掉空格字符
+    var arrCookie = getCookie.split(";");  //将获得的cookie以"分号"为标识 将cookie保存到arrCookie的数组中
+    var tips;  //声明变量tips
+    for (var i = 0; i < arrCookie.length; i++) {   //使用for循环查找cookie中的tips变量
+        var arr = arrCookie[i].split("=");   //将单条cookie用"等号"为标识，将单条cookie保存为arr数组
+        if (key == arr[0]) {  //匹配变量名称，其中arr[0]是指的cookie名称，如果该条变量为tips则执行判断语句中的赋值操作
+            tips = arr[1];   //将cookie的值赋给变量tips
+            break;   //终止for循环遍历
+        }
+    }
+    return tips;
+}
+function showVerify(){
+    var isMobileValidate = userProxyData.isMobileValidate;
+    if(isMobileValidate == "false"){
+        $("#showMobileValidate").css("display","block");
+    }
+}
+
+/**
+ * 刷新验证码
+ */
+function changValidateCode2(){
+    $("#validateCodeImg").attr("src", webPath.webRoot+"/ValidateCode?" + Math.random());
+}
+$(function () {
+    var leftTime = $.cookie('leftTimeM');
+    if (leftTime != 0 && leftTime != null) {
+        countDown(leftTime);
+    }
+
+});
+
+//获取验证码
+function getValidateCode(frequencyStr) {
+    var mobile = $("#mobileValidateCode").val();
+    if(mobile==""|| mobile==null){
+        showTip("#checkContactWay", "请输入手机号码!");
+        return false;
+    }
+    if (!strP.test(mobile)) {
+        showTip("#checkContactWay", "手机号码错误或者不存在!");
+        return false;
+    }
+    var verificationCode = $("#verificationCode").val();
+    if(verificationCode==""&&verificationCode==null) {
+        showTip("#checkVerificationCode", "请输入验证码!");
+        return false;
+    }
+    $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8;";
+    $.ajax({
+        type: "POST",
+        url: webPath.webRoot + "/member/genSendValidateCodeMobile.json",
+        data:{
+            account:mobile,
+            type:0,
+            code:verificationCode
+        },
+        success: function (data) {
+            changValidateCode2();
+            countDown(frequencyStr);
+        },
+        error: function (XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+                changValidateCode2();
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    });
+}
+
+//倒计时
+var countDown = function countDown(leftTime) {
+    $("#getValidateCode").hide();
+    $("#reSend").hide();
+    $("#countDown").show();
+    $("#countDown").html("倒计时" + leftTime + "秒");
+    sh = setInterval(function () {
+        if (leftTime <= 0) {
+            clearInterval(sh);
+            $("#countDown").hide();
+            $("#reSend").show();
+            $.cookie('leftTimeM', 0);
+        } else {
+            leftTime -= 1;
+            $.cookie('leftTimeM', leftTime);
+            $("#countDown").html("倒计时" + leftTime + "秒");
+        }
+    }, 1000);
+};
+
+function validateMobile(){
+    var userId = userProxyData.userId;
+    var mobile = $("#mobileValidateCode").val();
+    if (mobile == ""|| mobile == null) {
+        showTip("#checkContactWay", "手机号只能是数字!");
+        return false;
+    }
+    if (mobile.length < 11) {
+        showTip("#checkContactWay", "请输入正确的手机号码!");
+        return false;
+    }
+    if (!strP.test(mobile)) {
+        showTip("#checkContactWay", "手机号码错误或者不存在!!");
+        return false;
+    }else{
+        showTip("#checkContactWay", "");
+        return true;
+    }
+    $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8;";
+    $.ajax({
+        type: "POST",
+        url: webPath.webRoot + "/member/activateAccount.json",
+        data:{
+            mobile:mobile
+        },
+        success: function (data) {
+            return true;
+            //window.location.reload();
+        },
+        error: function (XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    });
+
+}
+
+//绑定手机
+function bindMobile() {
+    var validateCode = $("#validateCode").val();//验证码
+    var mobile = $("#mobileValidateCode").val();//手机号码
+    var verificationCode = $("#verificationCode").val();//图形验证码
+    if (mobile == "" || mobile == null) {
+        showAlert("请输入手机号码！","error");
+        return false;
+    } else if(validateCode== "" || validateCode == null ){
+        showAlert("请输入验证码！","error");
+        return false;
+    }
+    $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8;";
+    $.ajax({
+        type: "POST",
+        url: webPath.webRoot + "/member/activateMobile.json",
+        data:{
+            type:0,
+            mobile:mobile,
+            validateCode:validateCode,
+            verificationCode:verificationCode
+        },
+        success: function (data) {
+            window.location.reload();
+    },
+    error: function (XMLHttpRequest, textStatus) {
+         if (XMLHttpRequest.status == 500) {
+             var result = eval("(" + XMLHttpRequest.responseText + ")");
+            showAlert(result.errorObject.errorText,"error");
+        }
+    }
+ });
+
+}
+
+
+var showTip = function (tipId, errorText) {
+    var tip = $(tipId);
+    //tip.parent().find('span').hide();
+    tip.html(errorText);
+    tip.show();
+};
+var showSuccess = function (tipId) {
+    var par = $(tipId).parent();
+    par.children('.message').hide();
+    par.find('span').show();
+};
+
+function showObj(obj,objIndex,hideObj,showObj){
+    $(obj).removeClass("cur");
+    $(objIndex).addClass("cur");
+    $(hideObj).hide();
+    $(showObj).show();
+}
+
+//登陆
+var rightBuycarLogin = function() {
+    $("#mb-login-msg").fadeOut();
+    $.ajaxSettings['contentType'] = "application/x-www-form-urlencoded; charset=utf-8";
+    var loginId = $("#loginId").val();
+    var userPsw = $("#userPsw").val();
+    if (loginId == null || loginId == '' || loginId == 'E-mail、昵称或手机号') {
+        $("#mb-login-msg > span").html("请输入账户！");
+        $("#mb-login-msg").fadeIn();
+        return;
+    }
+    if (userPsw == null || userPsw == '') {
+        $("#mb-login-msg > span").html("请输入密码！");
+        $("#mb-login-msg").fadeIn();
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: webPath.webRoot+"/member/login.json",
+        data: {loginId: loginId, password: $.md5(userPsw)},
+        dataType: "json",
+        success: function (data) {
+            if (data.success == false) {
+                if (data.errorCode == "errors.login.userstat") {
+                    $("#mb-login-msg > span").html("用户已被冻结，请联系客服！");
+                    $("#mb-login-msg").fadeIn();
+                }
+                else if (data.errorCode == "errors.login.noexist") {
+                    $("#mb-login-msg > span").html("该账户名不存在！");
+                    $("#mb-login-msg").fadeIn();
+                }
+                else if (data.errorCode == "errors.login.password") {
+                    $("#mb-login-msg > span").html("用户名与密码不匹配！");
+                    $("#mb-login-msg").fadeIn();
+                }
+                else if (data.errorCode == "errors.login.no.remain.time") {
+                    $("#mb-login-msg > span").html("您今天密码出错次数为 " + data.errorArg + "次，已被系统屏蔽！");
+                    $("#mb-login-msg").fadeIn();
+                }
+                else if (data.errorCode == "errors.remain.time.login.password") {
+                    $("#mb-login-msg > span").html("密码出错，您今天还有 " + data.errorArg + "次重新输入的机会！");
+                    $("#mb-login-msg").fadeIn();
+                }
+                else if (data.errorCode == "errors.login.emailActivate") {
+                    $("#mb-login-msg > span").html("未通过邮箱验证，登录失败，请查看您的注册邮箱点击邮箱验证链接进行验证!");
+                    $("#mb-login-msg").fadeIn();
+                } else {
+                    $("#mb-login-msg > span").html("账户冻结或账户已被删除!");
+                    $("#mb-login-msg").fadeIn();
+                }
+            }
+            else {
+                window.location.reload();
+            }
+        },
+        error: function (XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+                $("#mb-login-msg > span").html(result.errorObject.errorText);
+                $("#mb-login-msg").fadeIn();
+            }
+        }
+    });
+};
+function showLogin(){
+    easyDialog.open({
+        container : 'loginContainer',
+        fixed : false
+    });
+}
+
+function closeLogin(){
+    easyDialog.close();
+}
+
+
+function toSelectSuborg(orgId){
+    $.ajax({
+        url:Top_Path.webRoot+"/suborgFront/selectSuborg.json",
+        data:{orgId:orgId},
+        dataType: "json",
+        success:function(data) {
+            window.location.reload();
+        },
+        error:function(XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+//                alert(result.errorObject.errorText);
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    })
+}
+
+//切换账号
+function toSelectAccount(sysUserId, changeUserId){
+    //alert("待完善，切换账号操作员："+sysUserId+"==切换的账号："+changeUserId);
+    $.ajax({
+        url:Top_Path.webRoot+"/member/changeAccount.json",
+        data:{sysUserId:sysUserId, changeUserId:changeUserId},
+        dataType: "json",
+        success:function(data) {
+            window.location.reload();
+        },
+        error:function(XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    })
+}
+
+
+var moveBoxToCart = function(obj, ico) {
+//加入购物车效果
+    if (null != ico || undefined != ico) {
+        //首页商品悬浮窗 加入购物车
+        $("body").after('<div id="floatOrder" class="pay" style="z-index: 999;border:2px solid #ffb33c; border-radius: 3px;"><img src="' + ico + '" alt="进货" /></div>');
+
+    } else if(null != imgpathData.defaultImage || undefined != imgpathData.defaultImage){
+        //商品详情 加入购物车
+        $("body").after('<div id="floatOrder" class="pay" style="z-index: 999;border:2px solid #ffb33c; border-radius: 3px;"><img src="' + imgpathData.defaultImage + '" alt="进货" /></div>');
+    }else{
+        $("body").after('<div id="floatOrder" class="pay"><a class="index_addcart" skuid="6" num="3" carttype="normal" handler="sku" href="javascript:;">进货</a></div>');
+    }
+    //直接加载购物车
+    //$("#buycart-main").load(login_webPath.webRoot+"/ajaxload/cartSideBar.ac");
+    //$("body").after('<div id="floatOrder" class="pay"><a class="index_addcart" skuid="6" num="3" carttype="normal" handler="sku" href="javascript:;">进货</a></div>');
+    var myBox = $("#floatOrder");
+    var divTop = $(obj).offset().top;
+    var divLeft = $(obj).offset().left;
+    var divWidth = $(obj).width();
+    myBox.css({
+        "position": "absolute",
+        "z-index": "9999",
+        "left": divLeft + divWidth/2 + "px",
+        "top": divTop + "px"
+    });
+    myBox.animate({
+            "left": ($(".mbar .buyCart").offset().left - $(".mbar .buyCart").width() ) + "px",
+            "top": $(".mbar .buyCart").offset().top + 15+ "px",
+            "width": "60px",
+            "height": "30px"
+        },
+        600,
+        function() {
+            myBox.animate({
+                "left": $(".mbar .buyCart").offset().left + "px",
+                "top": $(".mbar .buyCart").offset().top + 15 + "px",
+                "width": "50px",
+                "height": "25px"
+            },600).fadeTo(0, 0.1).remove();
+        });
+};
+
+var moveBoxToOtherCart = function(obj, ico, cartClass) {
+//加入购物车效果
+    if (null != ico || undefined != ico) {
+        //首页商品悬浮窗 加入购物车
+        $("body").after('<div id="floatOrder" class="pay" style="z-index: 999;border:1px solid #ffb33c; border-radius: 3px;"><img src="' + ico + '" alt="进货" /></div>');
+
+    } else if(null != imgpathData.defaultImage || undefined != imgpathData.defaultImage){
+        //商品详情 加入购物车
+        $("body").after('<div id="floatOrder" class="pay" style="z-index: 999;border:1px solid #ffb33c; border-radius: 3px;"><img src="' + imgpathData.defaultImage + '" alt="进货" /></div>');
+    }else{
+        $("body").after('<div id="floatOrder" class="pay"><a class="index_addcart" skuid="6" num="3" carttype="normal" handler="sku" href="javascript:;">进货</a></div>');
+    }
+    if(null == cartClass || undefined == ico) {
+        cartClass = "buyCart";
+    }
+
+    //直接加载购物车
+    $("#buycart-main").load(login_webPath.webRoot+"/ajaxload/cartSideBar.ac");
+    //$("body").after('<div id="floatOrder" class="pay"><a class="index_addcart" skuid="6" num="3" carttype="normal" handler="sku" href="javascript:;">进货</a></div>');
+    var myBox = $("#floatOrder");
+    var divTop = $(obj).offset().top;
+    var divLeft = $(obj).offset().left;
+    var divWidth = $(obj).width();
+    myBox.css({
+        "position": "absolute",
+        "z-index": "9999",
+        "left": divLeft + divWidth/2 + "px",
+        "top": divTop + "px"
+    });
+    myBox.animate({
+            "left": ($(".mbar ." + cartClass).offset().left - $(".mbar ." + cartClass).width() ) + "px",
+            "top": $(".mbar ." + cartClass).offset().top + 15+ "px",
+            "width": "60px",
+            "height": "30px"
+        },
+        600,
+        function() {
+            myBox.animate({
+                "left": $(".mbar ." + cartClass).offset().left + "px",
+                "top": $(".mbar ." + cartClass).offset().top + 15 + "px",
+                "width": "50px",
+                "height": "25px"
+            },600).fadeTo(0, 0.1).remove();
+        });
+};
+
+
+function addBuyCart(obj){
+    var value=   $(obj).prev("input").val();
+
+    var midPackTotal = $(obj).attr("midPackTotal");
+    var v = parseFloat(value);
+    var num;
+    if(midPackTotal!=undefined&&midPackTotal!=""){
+        num=v+parseFloat(midPackTotal);
+    }else{
+        num=v+1;
+    }
+    num = parseFloat(num.toFixed(2));
+    var itemKey=$(obj).attr("itemKey");
+    var carttype=$(obj).attr("carttype");
+    var handler=$(obj).attr("handler");
+    $.ajax({
+        url:Top_Path.webRoot+"/cart/update.json",
+        data:{quantity:num,itemKey:itemKey,type:carttype,handler:handler},
+        dataType: "json",
+        success:function(data) {
+            /*$(".cartNum").val(num);*/
+            $(obj).prev("input").val(num);
+            if(handler != 'combo'){
+                updateCartSideBarcartItemProxy(data,itemKey);
+            }
+            updateStatistics(data);
+        },
+        error:function(XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+//                alert(result.errorObject.errorText);
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    });
+}
+function subBuyCart(obj){
+    var value=   $(obj).next("input").val();
+    var itemKey=$(obj).attr("itemKey");
+    var carttype=$(obj).attr("carttype");
+    var handler=$(obj).attr("handler");
+
+    var midPackTotal = $(obj).attr("midPackTotal");
+    var v = parseFloat(value);
+    if(midPackTotal!=undefined&&midPackTotal!=""){
+        var minTotal = parseFloat(midPackTotal);
+        var num =v-minTotal;
+        if(num<minTotal){
+            num = minTotal;
+        }
+        num = parseFloat(num.toFixed(2));
+        $(obj).next("input").val(num);
+    }else{
+        var num = v - 1;
+        if (num <= 0) {
+            return;
+        }
+        num = parseFloat(num.toFixed(2));
+        $(obj).next("input").val(num);
+    }
+
+    $.ajax({
+        url:Top_Path.webRoot+"/cart/update.json",
+        data:{quantity:num,itemKey:itemKey,type:carttype,handler:handler},
+        dataType: "json",
+        success:function(data) {
+            $(obj).next("input").val(num);
+            if(handler != 'combo') {
+                updateCartSideBarcartItemProxy(data, itemKey);
+            }
+            updateStatistics(data);
+        },
+        error:function(XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+//                alert(result.errorObject.errorText);
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    })
+}
+$(".quantityNum").live("change",function(){
+    var value= $(this).val();
+    var reg= new RegExp("^(([1-9]\\d*)\|(0))(\\.\\d*)?$");
+    var midPackTotal = $(this).attr("midPackTotal");
+    if (!(midPackTotal != undefined && midPackTotal != "")) {
+        midPackTotal = 1;
+    }
+    if(midPackTotal!=undefined&&midPackTotal!=""){
+        var minTotal = parseFloat(midPackTotal);
+        var v = parseFloat(value);
+        if(!reg.test(value)){
+            $(this).val(minTotal);
+        }
+        if(v<minTotal||mod(v, minTotal)!=0){
+            $(this).val(minTotal);
+        }
+    }else{
+        if(!reg.test(value)){
+            $(this).val(1);
+        }
+    }
+    value= $(this).val();
+    var itemKey=$(this).attr("itemKey");
+    var carttype=$(this).attr("carttype");
+    var handler=$(this).attr("handler");
+    if(value==0){
+        return;
+    }
+    $.ajax({
+        url:Top_Path.webRoot+"/cart/update.json",
+        data:{quantity:value,itemKey:itemKey,type:carttype,handler:handler},
+        dataType: "json",
+        success:function(data) {
+            $(this).val(value);
+            if(handler != 'combo') {
+                updateCartSideBarcartItemProxy(data, itemKey);
+            }
+            updateStatistics(data);
+        },
+        error:function(XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+//                alert(result.errorObject.errorText);
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    });
+});
+
+//首页右侧购物侧车删除按钮
+function delBuyCart(obj){
+    var itemKey = $(obj).attr("itemKey");
+    var carttype = $(obj).attr("carttype");
+    var handler = $(obj).attr("handler");
+    showLoading();
+    $.ajax({
+        url:Top_Path.webRoot+"/cart/remove.json",
+        data: {type: carttype, itemKey: itemKey, handler: handler},
+        dataType: "json",
+        contentType: "application/x-www-form-urlencoded; charset=utf-8",
+        success: function (data) {
+            if (data.success == "true") {
+                delBuyHandle(obj,data);
+                hideLoading();
+            }
+        },
+        error:function(XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 500) {
+                hideLoading();
+                var result = eval("(" + XMLHttpRequest.responseText + ")");
+                showAlert(result.errorObject.errorText,"error");
+            }
+        }
+    });
+}
+
+//删除后处理
+function delBuyHandle(obj,data){
+    var itemSelected = 0;
+    var itemUnSelected = 0;
+
+    for (var i=0;i<data.result.items.length;i++){
+        if (data.result.items[i].promotionType != 5 && data.result.items[i].itemSelected){
+            itemSelected++;
+        }
+        if (data.result.items[i].promotionType != 5 && !data.result.items[i].itemSelected){
+            itemUnSelected++;
+        }
+    }
+    $("#sideBar_cart_count").text(itemSelected); //更新品种数
+    if ((itemSelected+itemUnSelected) == 0){ //隐藏
+        $("#buycart-main .m-no").show();
+        $("#buycart-main .m-have").hide();
+        $("#buycart-main .m-pay").hide();
+    }
+    updateStatistics(data); //更新购物车总数、总价格
+    refurbishCartCountIcon(data.result.items); //刷新首页购物车图标数量
+
+    //删除itemKey对应的li
+    var itemKey = $(obj).attr("itemKey");
+    $("#buycart-main .item_key_"+itemKey).remove();
+
+    console.info(itemKey);
+}
+
+function updateStatistics(data){
+    try{
+        var result = data.result;
+        $("#cart_total_num").text(data.totalPrdNumber);
+        $("#cart_total_amount").html('<i>￥</i>' +  parseFloat(result.orderTotalAmount).toFixed(2));
+    }catch (ex){
+
+    }
+}
+
+function showBuyCart(type, handler){
+
+    $(".m-item").removeClass("cur");
+    $("#buycart-main").load(login_webPath.webRoot+"/ajaxload/cartSideBar.ac?type="+type+"&handler="+handler,function(){
+        hideLoading();
+        var cart_count = $("#sideBar_cart_count").attr("cart_count");
+        refurbishCartCount(cart_count); //刷新购物车图标数量
+    });
+    var  dis= document.getElementById("buycart-main").style.display;
+    if("none"===dis){
+        var loading = $("#buycart-main .loading-buy-cart"); //如果#buycart-main中没有侧边栏购物车重新加载并在加载前加入‘加载中’图标
+        if (loading == null || loading == undefined || loading.html() == undefined || loading.html() == 'undefined' || loading.html() == null){
+            addLoadingBuycart();
+            showLoading();
+        }else {
+            showLoading();
+        }
+        $(".buycar-main").fadeIn();
+    }else {
+        hideLoading();
+        $(".buycar-main").fadeOut();
+    }
+
+    $("#qqkf").fadeOut();
+/*    if($("#ifLogin").val()=='Y'){
+        $(".buycar-main").fadeIn();
+    }else{
+        window.location.href=login_webPath.webRoot+"/login.ac"
+    }*/
+}
+function hideBuyCart(){
+    $(".buycar-main").fadeOut();
+
+    $("#qqkf").fadeOut();
+}
+
+function showHistory(){
+    $(".m-item").removeClass("cur");
+    $("#buycart-main").load(login_webPath.webRoot+"/ajaxload/historySideBar.ac");
+    if($("#ifLogin").val()=='Y'){
+        $(".buycar-main").fadeIn();
+    }else{
+        window.location.href=login_webPath.webRoot+"/login.ac"
+    }
+}
+
+/*修改数量后：实时价格变动更新*/
+function updateCartSideBarcartItemProxy(data,itemKey){
+    var itemKeyProductUnitPrice = data.itemKeyProductUnitPrice;
+    console.log(itemKeyProductUnitPrice);
+    $(".cartSideBarcartItemProxy_" + itemKey).html("<i>￥</i>" + itemKeyProductUnitPrice);
+}
+
+
+
+function  goToQq(obj){
+    $(".buycar-main").fadeOut();
+    var  dis= document.getElementById("qqkf").style.display;
+    if("none"==dis){
+        $("#qqkf").fadeIn();
+    }else {
+        $("#qqkf").fadeOut();
+    }
+}
+
+
+/**
+ * 最大判断小数点后面4位
+ * 小数求余运算，最大判断小数点后面4位
+ * @param op1 左操作数
+ * @param op2 右操作数
+ * @returns {number}
+ */
+function mod(op1,op2){
+    var op1 = parseInt(op1 * 10000);
+    var op2 = parseInt(op2 * 10000);
+    return op1 % op2;
+}
+
+//隐藏加载层
+function hideLoading(){
+    $(".modal-load").hide();
+    $(".loading-load").hide();
+}
+
+//显示加载层
+function showLoading(){
+    $(".modal-load").show();
+    $(".loading-load").show();
+}
+
+//第一次加载右侧购物侧添加加载层
+function addLoadingBuycart(){
+    $("#buycart-main").html('<div class="loading-buy-cart modal-load hideview" >'+
+        '<div class="load-zz"></div>'+
+        '<div class="loading-load" style="left: 40%;">'+
+        '<img  src="/template/tongan/wap/images/loadinfo.gif"/>'+
+        '</div>'+
+        '</div>');
+}
+function closeWinShow(){
+    setTimeout(function(){//100ms后再执行隐藏动作,若是点击搜索内容则可跳转
+        $("#search-layer").hide();
+    },500);
+}
+
+
+
+/*头部搜索*/
+$("#searchFields").blur(function(){
+    alert(1);
+    if($(this).val()==""){
+        $(this).attr("value","请输入关键字：药品名|厂家|批准文号");
+    }
+});
+$("#searchFields").mouseup(function(){
+    alert(2);
+    if($(this).val()=="请输入关键字：药品名|厂家|批准文号"){
+        $(this).attr("value","");
+    }
+    if ($("#search-layer").html()!=""){
+        $("#search-layer").show();
+    }
+
+});
+$("#search-layer").html("");
+/*头部搜索*/
+$("#searchFields").blur(function(){
+    if($(this).val()==""){
+        $(this).attr("value","请输入关键字：药品名|厂家|批准文号");
+    }
+});
+$("#searchFields").mouseup(function(){
+    if($(this).val()=="请输入关键字：药品名|厂家|批准文号"){
+        $(this).attr("value","");
+    }
+    if ($("#search-layer").html()!=""){
+        $("#search-layer").show();
+    }
+
+});
+$("#searchProduct").click(function(){
+    var searchFields=$(this).parent().siblings("input").get(1);
+
+    if(searchFields.value==null || searchFields.value==""||searchFields.value=="请输入关键字：药品名|厂家|批准文号"){
+//                alert("请输入搜索关键字");
+        showAlert("请输入搜索关键字","error");
+        return false;
+    }
+    $b=$(this).parent().parent("form");
+
+    setTimeout(function() {
+        $b.submit();
+    },1);
+    return true;
+});
+
+
+$(".categorys").hover(function(){
+    $("#main_menu").show();
+},function(){
+    if(Top_Path.topParam!="index"){
+        $("#main_menu").hide();
+    }
+});
+
+$("#searchFields").live("keyup",function (event) {
+    if (event.keyCode == 38 || event.keyCode == 40) {
+        return;
+    }
+    if($("#searchFields").val()==""){
+        $("#search-layer").html("");
+        $("#search-layer").hide();
+        return ;
+    }
+    currentLine=0;
+    count=0;
+    searchResult();
+});
+
+function searchResult(){
+    $.ajax({
+        type:"GET",
+        url:webPath.webRoot+"/searchProduct/search.json",
+        data:{
+            limit:10,
+            searchFields:$("#searchFields").val()
+        },
+        dataType:"JSON",
+        success:function(data) {
+            if(data.result!=null){
+                var detail = "";
+                for (var i=0; i < data.result.length; i++) {
+                    var product = data.result[i];
+                    console.log(product);
+                    detail+="<a class='line' product='"+product+"' href='"+webPath.webRoot+"/productlist.ac?keyword="+encodeURI(product)+"' target='_self'>"+product+"&nbsp;&nbsp;</a>";
+                }
+                $("#search-layer").html(detail);
+                $("#search-layer").show();
+
+                /*鼠标指向的时候触发的事件*/
+                $('.line').hover(function () { // 鼠标匹配到的元素高亮
+                    $('.line ').removeClass('cur');
+                    $(this).addClass('cur');
+                    var keyWord = $(this).attr("product");
+                    $("#searchFields").attr("value", keyWord);
+                    var index = $(this).index();//获取当前鼠标指向元素的下标
+                    currentLine = index;//将键盘上下键移动的改成鼠标指向的下标
+
+                }, function () {
+                    $(this).removeClass('cur');
+                });
+
+            }
+        },
+        error:function(data){
+
+        }
+    });
+}
+
+
+function timingSwitch(isFoucs){
+    $.ajax({
+        type:"post",
+        url:login_webPath.webRoot+"/searchProduct/getSearchKeyWord.json",
+        dataType:"JSON",
+        success:function(data) {
+            //前台未设置隐藏
+            if (data.result.isShow != 'N') {
+                var productSearchKeyword = data.result.pageLinkVoList;//子公司设置的搜索关键词
+                productSearchKeywords = data.result.pageLinkVoList;
+                var keyWord = productSearch.keyword;//点击搜索后的关键词
+                var inputValue = $("#searchFields").val();
+                if (productSearchKeyword.length <= 0 || (keyWord != null && keyWord != "")) {
+                    $("#searchFields").css("color", "#37474F");//实际搜索的关键词展示正常颜色
+                } else {
+                    $("#searchFields").css("color", "#D3D3D3");//默认关键词展示灰色
+                }
+                //输入框失去焦点后才执行5秒切换一次关键词，否则不执行
+                if (isFoucs && (inputValue == null || inputValue == "") && (keyWord == null || keyWord == "") && productSearchKeyword.length != 0) {
+                    if (productSearchKeyword.length == 1) {//如果没有设置多个，就不滚动，直接设置
+                        $("#searchFields").attr("value", productSearchKeyword[0].title);
+                        $("#searchFields").attr("url", productSearchKeyword[0].link);
+                        return;
+                    }
+                    $("#searchFields").attr("value", productSearchKeyword[0].title);
+                    $("#searchFields").attr("url", productSearchKeyword[0].link);
+                    var i = 0;
+                    (function (i) {
+                        //每5秒执行一次切换
+                        window.setInterval(function () {
+                            if (getFocus) {//是否获取到焦点，获取到则不滚动关键词
+                                console.log("开始循环切换第" + i + "个搜索关键词");
+                                inputValue = $("#searchFields").val();
+                                if (inputValue == null || inputValue == "") {
+                                    $("#searchFields").css("color", "#D3D3D3");//默认关键词展示灰色
+                                    $("#searchFields").attr("value", productSearchKeyword[i].title);
+                                    $("#searchFields").attr("url", productSearchKeyword[i].link);
+                                } else if ((inputValue != null || inputValue != "") && checkValue(productSearchKeyword, inputValue)) {
+                                    $("#searchFields").css("color", "#D3D3D3");//默认关键词展示灰色
+                                    $("#searchFields").attr("value", productSearchKeyword[i].title);
+                                    $("#searchFields").attr("url", productSearchKeyword[i].link);
+                                }
+                                i++;
+                                if (i == productSearchKeyword.length) {//滚动到最后一个的时候，从第一个重新开始滚动
+                                    i = 0;
+                                }
+                            }
+                        }, (i + 1) * 5000);
+                    })(i);
+                }
+            }
+        }
+    })
+}
+//输入框用户是否手动输入了值，如果有，就不再滚动切换
+function checkValue(productSearchKeyword,inputValue){
+   for(var i=0;i<productSearchKeyword.length;i++){
+       if(productSearchKeyword[i].title==inputValue){
+           return true;
+       }
+   }
+    return false;
+}
+
+function closeWinShow(){
+    setTimeout(function(){//100ms后再执行隐藏动作,若是点击搜索内容则可跳转
+        $("#search-layer").hide();
+    },500);
+}
+
+
+// 方向盘调用的事件
+function changeItem() {
+    if (currentLine < 0) { // 此时，第一行高亮，按下了方向（上）键
+        currentLine = $(".line").length - 1;
+    } else if (currentLine == $(".line").length) { //此时，最后一行高亮，按下了方向（下）键
+        currentLine = 0;
+    }
+    if (count == 1) {
+        $('.line').removeClass('cur'); // 清除高亮
+        $('.line:eq(0)').addClass('cur'); //添加高亮
+        var keyWord = $('.line:eq(0)').attr("product");
+        $("#searchFields").attr("value", keyWord);
+        currentLine = 0;
+    } else {
+        $('.line').removeClass('cur'); // 清除高亮
+        $('.line:eq(' + currentLine + ')').addClass('cur'); //添加高亮
+        var keyWord = $('.line:eq(' + currentLine + ')').attr("product");
+        $("#searchFields").attr("value", keyWord);
+    }
+
+}
+
+function searchProduct(searchFields){
+    window.location.href = webPath.webRoot + "/productlist.ac?keyword=" + encodeURI(searchFields);
+}
+

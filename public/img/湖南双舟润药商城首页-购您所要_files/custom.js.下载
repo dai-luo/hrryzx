@@ -1,0 +1,74 @@
+//处方药
+function yinCang(){
+    var yin = $("#yincang1").val();
+    if("Y"== yin){
+//			document.getElementById("yin1").style.display="none";
+        document.getElementById("yin1").setAttribute("class","");
+//			document.getElementById("yin1").style.width="560px";
+        document.getElementById("yin1").style.height="1px";
+        document.getElementById("yin1").style.margin="auto";
+        document.getElementById("prd1").style.display="none";
+        document.getElementById("tab1").style.display="none";
+    }
+}
+
+//进口药
+function yinCang2(){
+    var yin = $("#yincang2").val();
+    if("Y"== yin){
+        document.getElementById("yin2").setAttribute("class","");
+        document.getElementById("yin2").style.height="1px";
+        document.getElementById("yin2").style.margin="auto";
+        document.getElementById("prd2").style.display="none";
+        document.getElementById("tab2").style.display="none";
+    }
+}
+
+//器械耗材
+function yinCang3(){
+    var yin = $("#yincang3").val();
+    if("Y"== yin){
+        document.getElementById("yin3").setAttribute("class","");
+        document.getElementById("yin3").style.height="1px";
+        document.getElementById("yin3").style.margin="auto";
+        document.getElementById("prd3").style.display="none";
+        document.getElementById("tab3").style.display="none";
+    }
+}
+
+//商品-广告-商品 1
+function yinCang4(){
+    var yin = $("#yincang4").val();
+    if("Y"== yin){
+        document.getElementById("yin4").setAttribute("class","");
+        document.getElementById("yin4").style.height="1px";
+        document.getElementById("yin4").style.margin="auto";
+        document.getElementById("prdAdvPrd1").style.display="none";
+        document.getElementById("tab4").style.display="none";
+    }
+}
+
+//商品-广告-商品 2
+function yinCang5(){
+    var yin = $("#yincang5").val();
+    if("Y"== yin){
+        document.getElementById("yin5").setAttribute("class","");
+        document.getElementById("yin5").style.height="1px";
+        document.getElementById("yin5").style.margin="auto";
+        document.getElementById("prdAdvPrd2").style.display="none";
+        document.getElementById("tab5").style.display="none";
+    }
+}
+
+
+//商品-广告-商品 3
+function yinCang6(){
+    var yin = $("#yincang6").val();
+    if("Y"== yin){
+        document.getElementById("yin6").setAttribute("class","");
+        document.getElementById("yin6").style.height="1px";
+        document.getElementById("yin6").style.margin="auto";
+        document.getElementById("prdAdvPrd3").style.display="none";
+        document.getElementById("tab6").style.display="none";
+    }
+}
